@@ -1,0 +1,7 @@
+{
+  "keycloakUrl": "",
+  "realm": "bibliogest",
+  "clientId": "bibliogest-react",
+  "acervoUrl": "/acervo/api",
+  "reservasUrl": "/reservas/api"
+}

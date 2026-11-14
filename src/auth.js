@@ -1,0 +1,59 @@
+import Keycloak from 'keycloak-js'
+
+let keycloak
+let config
+let initialization
+
+// A inicialização fica fora do ciclo de renderização do React/StrictMode.
+export function initializeAuth() {
+  initialization ??= initialize()
+  return initialization
+}
+
+async function initialize() {
+  const response = await fetch('/config.json', { cache: 'no-store' })
+  if (!response.ok) throw new Error('Configuração de autenticação indisponível')
+  config = await response.json()
+  if (!config.keycloakUrl) return { available: false }
+  const issuer = new URL(config.keycloakUrl)
+  if (issuer.protocol !== 'https:' && issuer.hostname !== 'localhost') {
+    throw new Error('O login exige HTTPS')
+  }
+  keycloak = new Keycloak({
+    url: config.keycloakUrl,
+    realm: config.realm,
+    clientId: config.clientId,
+  })
+  await keycloak.init({
+    onLoad: 'check-sso',
+    pkceMethod: 'S256',
+    checkLoginIframe: false,
+    responseMode: 'query',
+    redirectUri: `${window.location.origin}/`,
+  })
+  return { available: true, keycloak }
+}
+
+export async function apiFetch(service, path, options = {}) {
+  await initializeAuth()
+  if (!keycloak?.authenticated) throw new Error('Faça login para continuar')
+  const base = { acervo: config.acervoUrl, reservas: config.reservasUrl }[service]
+  if (!base || !path.startsWith('/') || path.startsWith('//')) {
+    throw new Error('Caminho de API inválido')
+  }
+  const baseUrl = new URL(`${base}/`, window.location.origin)
+  const url = new URL(path.slice(1), baseUrl)
+  if (url.origin !== window.location.origin || !url.pathname.startsWith(baseUrl.pathname)) {
+    throw new Error('Caminho de API inválido')
+  }
+  // O adapter mantém os tokens somente em memória e renova antes das chamadas.
+  try {
+    await keycloak.updateToken(30)
+  } catch {
+    keycloak.clearToken()
+    throw new Error('Sua sessão expirou. Entre novamente.')
+  }
+  const headers = new Headers(options.headers)
+  headers.set('Authorization', `Bearer ${keycloak.token}`)
+  return fetch(url, { ...options, headers, redirect: 'error' })
+}
