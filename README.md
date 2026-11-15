@@ -13,4 +13,4 @@ npm run dev
 
 Abra a URL que o Vite mostrar, normalmente [localhost:5173](http://localhost:5173/). O `public/config.json` vem com o endereço do Keycloak em branco. Assim, você pode trabalhar na interface local. Para conferir o login integrado, use o [BiblioGest publicado](https://bibliogest.ksferreira.org/). O login no Vite depende de um cliente Keycloak de desenvolvimento que autorize a URL local.
 
-Antes de abrir um pull request, rode `npm run lint` e `npm run build`. Veja [DEPLOYMENT.md](DEPLOYMENT.md) para a implantação no cluster.
+Antes de abrir um pull request, rode `npm run lint` e `npm run build`.
