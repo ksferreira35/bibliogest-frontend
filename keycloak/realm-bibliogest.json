@@ -1,0 +1,53 @@
+{
+  "realm": "bibliogest",
+  "enabled": true,
+  "displayName": "BiblioGest (desenvolvimento)",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "LEITOR", "description": "Acesso ao catálogo e às próprias reservas" },
+      { "name": "BIBLIOTECARIO", "description": "Gestão do acervo e atendimento no balcão" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "bibliogest-react",
+      "name": "BiblioGest React (local)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:5173"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "defaultClientScopes": ["web-origins", "profile", "email", "roles"]
+    }
+  ],
+  "users": [
+    {
+      "username": "leitor",
+      "email": "leitor@bibliogest.local",
+      "firstName": "Leitor",
+      "lastName": "Demonstração",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "leitor123", "temporary": false }],
+      "realmRoles": ["LEITOR"]
+    },
+    {
+      "username": "bibliotecario",
+      "email": "bibliotecario@bibliogest.local",
+      "firstName": "Bibliotecário",
+      "lastName": "Demonstração",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "biblio123", "temporary": false }],
+      "realmRoles": ["LEITOR", "BIBLIOTECARIO"]
+    }
+  ]
+}
+

@@ -1,0 +1,7 @@
+{
+  "keycloakUrl": "http://localhost:8080",
+  "realm": "bibliogest",
+  "clientId": "bibliogest-react",
+  "acervoUrl": "/api",
+  "reservasUrl": "/api"
+}
