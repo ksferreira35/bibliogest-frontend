@@ -1,0 +1,7 @@
+{
+  "keycloakUrl": "https://login.ksferreira.org",
+  "realm": "bibliogest",
+  "clientId": "bibliogest-react",
+  "acervoUrl": "/acervo/api",
+  "reservasUrl": "/reservas/api"
+}

@@ -4,4 +4,13 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: 'localhost',
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/acervo': { target: 'https://bibliogest.ksferreira.org', changeOrigin: true },
+      '/reservas': { target: 'https://bibliogest.ksferreira.org', changeOrigin: true },
+    },
+  },
 })

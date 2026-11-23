@@ -11,7 +11,8 @@ export function initializeAuth() {
 }
 
 async function initialize() {
-  const response = await fetch('/config.json', { cache: 'no-store' })
+  const configPath = import.meta.env.DEV ? '/config.dev.json' : '/config.json'
+  const response = await fetch(configPath, { cache: 'no-store' })
   if (!response.ok) throw new Error('Configuração de autenticação indisponível')
   config = await response.json()
   if (!config.keycloakUrl) return { available: false }
