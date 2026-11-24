@@ -2,6 +2,7 @@
   "keycloakUrl": "https://login.ksferreira.org",
   "realm": "bibliogest",
   "clientId": "bibliogest-react",
+  "logoutRedirectUri": "http://localhost:5173",
   "acervoUrl": "/acervo/api",
   "reservasUrl": "/reservas/api"
 }

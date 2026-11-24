@@ -10,6 +10,15 @@ export function initializeAuth() {
   return initialization
 }
 
+export function appRedirectUri() {
+  return `${window.location.origin}/`
+}
+
+export function logout() {
+  if (!keycloak) return Promise.reject(new Error('Keycloak não foi inicializado'))
+  return keycloak.logout({ redirectUri: config?.logoutRedirectUri || appRedirectUri() })
+}
+
 async function initialize() {
   const configPath = import.meta.env.DEV ? '/config.dev.json' : '/config.json'
   const response = await fetch(configPath, { cache: 'no-store' })
@@ -30,7 +39,7 @@ async function initialize() {
     pkceMethod: 'S256',
     checkLoginIframe: false,
     responseMode: 'query',
-    redirectUri: `${window.location.origin}/`,
+    redirectUri: appRedirectUri(),
   })
   return { available: true, keycloak }
 }
@@ -56,5 +65,5 @@ export async function apiFetch(service, path, options = {}) {
   }
   const headers = new Headers(options.headers)
   headers.set('Authorization', `Bearer ${keycloak.token}`)
-  return fetch(url, { ...options, headers, redirect: 'error' })
+  return fetch(url, { ...options, headers, cache: options.cache || 'no-store', redirect: 'error' })
 }

@@ -13,4 +13,6 @@ npm run dev
 
 Abra [http://localhost:5173](http://localhost:5173/). O modo de desenvolvimento carrega `public/config.dev.json` e encaminha `/acervo` e `/reservas` para `https://bibliogest.ksferreira.org`, com `changeOrigin` habilitado. O login usa Keycloak com PKCE e mantém o access token em memória para as chamadas autenticadas.
 
+No cliente `bibliogest-react` do realm `bibliogest`, permita `http://localhost:5173/*` em **Valid Redirect URIs** e `http://localhost:5173` em **Valid Post Logout Redirect URIs**. Configure **Web Origins** como `http://localhost:5173`. O endereço de retorno depois de sair está em `logoutRedirectUri` no `config.dev.json`.
+
 `public/config.json` é a configuração padrão de produção e não contém endereço de Keycloak local nem segredo de cliente. Não coloque `client_secret` no frontend.
