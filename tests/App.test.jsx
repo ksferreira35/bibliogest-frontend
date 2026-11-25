@@ -815,3 +815,23 @@ it.each([[], null])(
     ).toBeNull()
   },
 )
+
+it('balcão mostra o nome de outro leitor, sem expor seu UUID ou usar o nome do bibliotecário', async () => {
+  all = [
+    {
+      ...reservation(),
+      leitorId: 'uuid-do-outro-leitor',
+      leitorNome: 'Outro Leitor',
+    },
+  ]
+  start(['BIBLIOTECARIO'])
+  await catalogReady()
+  await userEvent.click(screen.getByRole('button', { name: /Balcão/ }))
+  expect(await screen.findByText('Solicitante: Outro Leitor')).toBeTruthy()
+  await userEvent.click(screen.getByRole('button', { name: /Detalhes/ }))
+  const modal = within(screen.getByRole('dialog'))
+  expect(modal.getByText('Outro Leitor')).toBeTruthy()
+  expect(modal.queryByText('Kaiky Ferreira')).toBeNull()
+  expect(modal.queryByText('ID do usuário')).toBeNull()
+  expect(modal.queryByText('uuid-do-outro-leitor')).toBeNull()
+})

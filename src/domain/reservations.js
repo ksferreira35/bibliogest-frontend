@@ -5,7 +5,9 @@ export function attachBooks(reservations, books, user) {
   return reservations.map((reservation) => ({
     ...reservation,
     obra: byId.get(reservation.obraId),
-    leitorNome: reservation.leitorId === user.subject ? user.name : undefined,
+    leitorNome:
+      reservation.leitorNome?.trim() ||
+      (reservation.leitorId === user.subject ? user.name : undefined),
   }))
 }
 

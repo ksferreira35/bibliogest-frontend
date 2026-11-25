@@ -67,7 +67,9 @@ it('mostra dados ausentes e datas inválidas sem esconder o registro de uma rese
     />,
   )
   expect(screen.getByText('inválida')).toBeTruthy()
-  expect(screen.getByText('Leitor other')).toBeTruthy()
+  expect(screen.getByText('Nome não informado')).toBeTruthy()
+  expect(screen.queryByText('other')).toBeNull()
+  expect(screen.queryByText('ID do usuário')).toBeNull()
   expect(screen.getByText('Não informada pela API')).toBeTruthy()
   await userEvent.click(screen.getByRole('button', { name: 'Fechar' }))
   expect(close).toHaveBeenCalledOnce()
@@ -103,4 +105,22 @@ it('retrocede uma página e não depende de uma fonte externa para os ícones', 
   )
   await userEvent.click(screen.getByRole('button', { name: 'Página anterior' }))
   expect(change).toHaveBeenCalledWith(0)
+})
+
+it('preserva o nome retornado pela API e usa a sessão somente para reservas da própria pessoa', () => {
+  const user = { subject: 'me', name: 'Meu nome' }
+  const result = attachBooks(
+    [
+      { leitorId: 'other', leitorNome: ' Nome do dono ' },
+      { leitorId: 'me', leitorNome: null },
+      { leitorId: 'other', leitorNome: null },
+    ],
+    [],
+    user,
+  )
+  expect(result.map((row) => row.leitorNome)).toEqual([
+    'Nome do dono',
+    'Meu nome',
+    undefined,
+  ])
 })

@@ -47,6 +47,11 @@ export function ReservationList({
                 {exemplar ? `Exemplar ${exemplar}` : 'Exemplar físico'} ·{' '}
                 {formatDateTime(createdAt)}
               </p>
+              {librarian && (
+                <p className="reservation-requester">
+                  Solicitante: {item.leitorNome || 'Nome não informado'}
+                </p>
+              )}
             </div>
             <span className={`status-stamp ${state}`}>{statusLabel}</span>
             <div className="row-actions">
@@ -113,7 +118,6 @@ function formatDateTime(value) {
 
 export function ReservationDetails({ reservation, onClose }) {
   const name = reservation.leitorNome
-  const requesterId = reservation.leitorId
   const requestedAt = reservation.criadaEm
   const pickedUpAt = reservation.retiradaEm
   const returnedAt = reservation.finalizadaEm
@@ -144,16 +148,7 @@ export function ReservationDetails({ reservation, onClose }) {
           <dt>Obra</dt>
           <dd>{title || 'Não informada pela API'}</dd>
           <dt>Solicitante</dt>
-          <dd>
-            {name ||
-              (requesterId ? `Leitor ${requesterId}` : 'Não identificado')}
-          </dd>
-          {!name && requesterId && (
-            <>
-              <dt>ID do usuário</dt>
-              <dd>{requesterId}</dd>
-            </>
-          )}
+          <dd>{name || 'Nome não informado'}</dd>
           <dt>Solicitada em</dt>
           <dd>{formatDateTime(requestedAt)}</dd>
           <dt>Exemplar</dt>

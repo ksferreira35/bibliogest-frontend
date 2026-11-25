@@ -62,7 +62,7 @@ O servidor de testes substitui **somente nesse modo** o adapter do Keycloak por 
 
 ### CI no GitHub Actions
 
-O workflow `.github/workflows/ci.yml` roda em pushes para `main` e para esta branch de implementação, além de pull requests destinados à `main`:
+O workflow `.github/workflows/ci.yml` roda em pushes para `main`, branches `feature/**` e `fix/**`, além de pull requests destinados à `main`:
 
 ```text
 lint → testes + cobertura → Cypress + axe → build
@@ -113,9 +113,15 @@ Em produção, frontend e APIs estão na mesma origem (`https://bibliogest.ksfer
 ## Build e publicação
 
 ```bash
-docker build -t bibliogest-frontend:0.1.6 .
+docker build -t bibliogest-frontend:0.1.7 .
 ```
 
 O estágio final contém apenas o site compilado e a configuração do Nginx, executado como usuário 101 na porta 8080. `README.md`, `.env`, configurações locais e relatórios ficam fora do contexto Docker. O download do navegador Cypress é desativado durante a construção da imagem; os testes E2E são executados no job próprio do CI.
 
 Em produção, `/config.json` é montado pelo ConfigMap `frontend-config` do RKE2. URLs de Keycloak e APIs são configuração pública. Senhas, tokens e chaves privadas não pertencem ao frontend. Os headers incluem ainda `nosniff`, política de referência, HSTS e bloqueio de frames. A CSP é definida no Nginx que entrega o HTML; os microsserviços retornam JSON e mantêm sua própria autorização.
+
+## Solicitante nas reservas
+
+O balcão e o detalhe mostram `leitorNome`, retornado pela API de Reservas, inclusive quando o bibliotecário está vendo a reserva de outra pessoa. O nome do usuário logado só serve de alternativa quando o `leitorId` da reserva corresponde ao `sub` da própria sessão. O UUID do usuário não é mostrado como nome nem como campo de identificação na tela.
+
+Para registros antigos sem nome, aparece **Nome não informado**, sem inventar a identidade ou substituir pelo nome do bibliotecário. A API grava o nome vindo do token validado no momento da solicitação. O ID continua no contrato da API e nas verificações de propriedade; não é segredo nem substitui autorização. Os nomes são renderizados como texto pelo React.

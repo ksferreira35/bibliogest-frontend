@@ -14,6 +14,7 @@ const reservation = {
   exemplarId: 'copy-1',
   leitorId: 'fixture-reader',
   estado: 'AGUARDANDO_RETIRADA',
+  leitorNome: 'Kaiky Ferreira',
   criadaEm: '2026-11-25T10:00:00Z',
 }
 function visit(roles = ['LEITOR']) {
@@ -22,7 +23,9 @@ function visit(roles = ['LEITOR']) {
     id: `book-${index + 1}`,
     titulo: index ? `Obra ${index + 1}` : book.titulo,
   }))
-  const reservations = []
+  const reservations = roles.includes('BIBLIOTECARIO')
+    ? [{ ...reservation, leitorId: 'outro-leitor' }]
+    : []
   cy.intercept('GET', '/config.dev.json', {
     keycloakUrl: 'https://login.example.test',
     realm: 'test',
@@ -79,7 +82,11 @@ function visit(roles = ['LEITOR']) {
       reservations.push(reservation)
       return req.reply({ statusCode: 201, body: reservation })
     }
-    return req.reply(reservations)
+    return req.reply(
+      new URL(req.url).pathname.endsWith('/reservation-1')
+        ? reservations[0]
+        : reservations,
+    )
   }).as('reservas')
   cy.visit('/', {
     onBeforeLoad(win) {
@@ -193,4 +200,18 @@ describe('BiblioGest no navegador', () => {
     )
     audit()
   })
+})
+
+it('bibliotecário identifica o dono de uma reserva de outro usuário pelo nome', () => {
+  visit(['BIBLIOTECARIO'])
+  cy.contains('button', 'Balcão').click()
+  cy.contains('Solicitante: Kaiky Ferreira').should('be.visible')
+  cy.contains('button', 'Detalhes').click()
+  cy.get('[role="dialog"]').within(() => {
+    cy.contains('Kaiky Ferreira').should('be.visible')
+    cy.contains('ID do usuário').should('not.exist')
+    cy.contains('outro-leitor').should('not.exist')
+    cy.contains('Pessoa de teste').should('not.exist')
+  })
+  audit()
 })
