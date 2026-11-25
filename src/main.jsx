@@ -12,7 +12,9 @@ async function start() {
     auth = { available: false }
   }
   createRoot(document.getElementById('root')).render(
-    <StrictMode><App auth={auth} /></StrictMode>,
+    <StrictMode>
+      <App auth={auth} />
+    </StrictMode>,
   )
 }
 

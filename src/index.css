@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
 
 :root { font-family: 'DM Sans', sans-serif; color: #e8e4df; background: #121316; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; --bg: #121316; --surface: #191a1e; --surface-2: #222328; --surface-3: #2b2c31; --line: #33343a; --text: #eee9e2; --muted: #a39e99; --dim: #74716e; --red: #a42d40; --red-soft: #d68b94; --gold: #d2ae67; --green: #8fc4a2; }
 * { box-sizing: border-box; }
