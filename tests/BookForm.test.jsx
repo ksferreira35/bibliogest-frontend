@@ -64,3 +64,71 @@ it('permite cadastrar obra sem descrição e mostra o limite disponível', async
   )
   expect(submit.mock.calls[0][0].descricao).toBeNull()
 })
+
+it('cadastra autor e categoria, seleciona os novos registros e envia os campos opcionais', async () => {
+  const onCreateSupport = vi.fn(async (_service, path, nome) => ({
+    id: path.endsWith('autores') ? 'novo-autor' : 'nova-categoria',
+    nome,
+  }))
+  const submit = vi.fn()
+  render(
+    <BookForm
+      book={book}
+      categories={[book.categoria, { id: 'nova-categoria', nome: 'Nova' }]}
+      authors={[...book.autor, { id: 'novo-autor', nome: 'Novo' }]}
+      onClose={vi.fn()}
+      onSubmit={submit}
+      onCreateSupport={onCreateSupport}
+    />,
+  )
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Cadastrar categoria' }),
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Cadastrar autor' }))
+  expect(onCreateSupport).not.toHaveBeenCalled()
+  await userEvent.type(
+    screen.getByLabelText('Nome da nova categoria'),
+    ' Nova ',
+  )
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Cadastrar categoria' }),
+  )
+  await userEvent.type(screen.getByLabelText('Nome do novo autor'), ' Novo ')
+  await userEvent.click(screen.getByRole('button', { name: 'Cadastrar autor' }))
+  await userEvent.type(
+    screen.getByLabelText('ISBN (opcional)'),
+    '9780000000001',
+  )
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Salvar alterações' }),
+  )
+  expect(submit.mock.calls[0][0]).toMatchObject({
+    categoriaId: 'nova-categoria',
+    autorIds: ['autor-1', 'novo-autor'],
+    isbn: '9780000000001',
+  })
+})
+it('mantém o formulário aberto e informa erros ao criar autor ou categoria', async () => {
+  const create = vi.fn().mockRejectedValue(new Error('Registro duplicado'))
+  render(
+    <BookForm
+      categories={[]}
+      authors={[]}
+      onClose={vi.fn()}
+      onCreateSupport={create}
+    />,
+  )
+  await userEvent.type(
+    screen.getByLabelText('Nome da nova categoria'),
+    'Categoria',
+  )
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Cadastrar categoria' }),
+  )
+  expect((await screen.findByRole('alert')).textContent).toBe(
+    'Registro duplicado',
+  )
+  await userEvent.type(screen.getByLabelText('Nome do novo autor'), 'Autor')
+  await userEvent.click(screen.getByRole('button', { name: 'Cadastrar autor' }))
+  expect(create).toHaveBeenCalledTimes(2)
+})

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/qualidade-acessibilidade]
   pull_request:
     branches: [main]
 
@@ -39,10 +39,53 @@ jobs:
       - name: Instalar dependências
         run: npm ci
       - name: Testar fluxos e permissões
-        run: npm test
+        run: npm run test:coverage
+      - name: Resumo da cobertura
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          if (fs.existsSync('coverage/coverage-summary.json')) {
+            const { total } = JSON.parse(fs.readFileSync('coverage/coverage-summary.json'))
+            const rows = ['lines', 'branches', 'functions', 'statements'].map(key => `| ${key} | ${total[key].pct}% |`).join('\n')
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Cobertura Vitest\n\nMínimo: 80% em cada métrica.\n\n| Métrica | Cobertura |\n| --- | --- |\n${rows}\n`)
+          }
+          NODE
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: frontend-coverage
+          path: coverage/
+          retention-days: 14
+          if-no-files-found: warn
+
+  e2e:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: cypress-io/github-action@v7
+        with:
+          start: npm run dev:e2e
+          wait-on: http://127.0.0.1:4173
+          browser: chrome
+          config: retries=0
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots/
+          retention-days: 14
+          if-no-files-found: ignore
 
   build:
-    needs: test
+    needs: e2e
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

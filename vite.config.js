@@ -1,16 +1,42 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    host: 'localhost',
-    port: 5173,
-    strictPort: true,
-    proxy: {
-      '/acervo': { target: 'https://bibliogest.ksferreira.org', changeOrigin: true },
-      '/reservas': { target: 'https://bibliogest.ksferreira.org', changeOrigin: true },
+export default defineConfig(({ mode, command }) => {
+  if (mode === 'e2e' && command !== 'serve')
+    throw new Error('O modo e2e não pode gerar um build de produção')
+  return {
+    plugins: [react()],
+    resolve: {
+      alias:
+        mode === 'e2e'
+          ? [
+              {
+                find: /^keycloak-js$/,
+                replacement: new URL(
+                  './cypress/support/keycloak.js',
+                  import.meta.url,
+                ).pathname,
+              },
+            ]
+          : [],
     },
-  },
+    server: {
+      host: 'localhost',
+      port: 5173,
+      strictPort: true,
+      proxy:
+        mode === 'e2e'
+          ? {}
+          : {
+              '/acervo': {
+                target: 'https://bibliogest.ksferreira.org',
+                changeOrigin: true,
+              },
+              '/reservas': {
+                target: 'https://bibliogest.ksferreira.org',
+                changeOrigin: true,
+              },
+            },
+    },
+  }
 })

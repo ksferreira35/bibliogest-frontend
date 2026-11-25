@@ -24,6 +24,8 @@ import {
 import BookForm from './components/BookForm.jsx'
 import Icon from './components/Icon.jsx'
 import CatalogPagination from './components/CatalogPagination.jsx'
+import Accessibility from './components/Accessibility.jsx'
+import Modal from './components/Modal.jsx'
 import './App.css'
 
 function asList(value) {
@@ -63,7 +65,15 @@ async function request(service, path, options) {
 function App({ auth }) {
   const session = useSession(auth?.keycloak)
   const identity = `${session.subject}:${session.signedIn}:${session.reader}:${session.librarian}`
-  return <Workspace key={identity} auth={auth} session={session} />
+  return (
+    <>
+      <a className="skip-link" href="#conteudo">
+        Pular para o conteúdo
+      </a>
+      <Workspace key={identity} auth={auth} session={session} />
+      <Accessibility />
+    </>
+  )
 }
 
 function Workspace({ auth, session }) {
@@ -297,6 +307,7 @@ function Workspace({ auth, session }) {
           value={query}
           maxLength={100}
           onChange={(event) => setQuery(event.target.value)}
+          aria-label="Buscar no catálogo"
           placeholder="Busque por título, autor ou ISBN"
         />
       </label>
@@ -536,7 +547,7 @@ function Workspace({ auth, session }) {
 
   if (!signedIn)
     return (
-      <div className="login-shell">
+      <main id="conteudo" tabIndex={-1} className="login-shell">
         <div className="login-art">
           <span className="eyebrow">BIBLIOGEST · BIBLIOTECA UNIVERSITÁRIA</span>
           <div className="login-quote">
@@ -582,12 +593,12 @@ function Workspace({ auth, session }) {
             BIBLIOGEST · SISTEMA DE BIBLIOTECA
           </span>
         </section>
-      </div>
+      </main>
     )
 
   if (!canRead)
     return (
-      <main className="empty-state" role="alert">
+      <main id="conteudo" tabIndex={-1} className="empty-state" role="alert">
         <h1>Acesso não autorizado</h1>
         <p>Sua conta não possui um perfil de acesso à biblioteca.</p>
         <button className="button secondary" onClick={signOut}>
@@ -621,6 +632,7 @@ function Workspace({ auth, session }) {
             <button
               key={id}
               className={page === id ? 'active' : ''}
+              aria-current={page === id ? 'page' : undefined}
               onClick={() => {
                 if ((id === 'gestao' || id === 'balcao') && !librarian) return
                 setPage(id)
@@ -652,7 +664,7 @@ function Workspace({ auth, session }) {
           </button>
         </div>
       </header>
-      <main className="content">
+      <main id="conteudo" tabIndex={-1} className="content">
         {error && (
           <div className="toast error" role="alert">
             <Icon>error</Icon>
@@ -1000,10 +1012,11 @@ function Workspace({ auth, session }) {
 
       {librarian && deletingBook && (
         <div className="modal-scrim">
-          <section
+          <Modal
             className="modal"
-            role="dialog"
-            aria-modal="true"
+            onClose={() => {
+              if (!busy) setDeletingBook(null)
+            }}
             aria-labelledby="delete-title"
           >
             <h2 id="delete-title">Excluir obra?</h2>
@@ -1033,7 +1046,7 @@ function Workspace({ auth, session }) {
                 Confirmar exclusão
               </button>
             </div>
-          </section>
+          </Modal>
         </div>
       )}
       {selectedBook && (
@@ -1043,10 +1056,9 @@ function Workspace({ auth, session }) {
             if (event.target === event.currentTarget) closeBook()
           }}
         >
-          <section
+          <Modal
             className="modal"
-            role="dialog"
-            aria-modal="true"
+            onClose={closeBook}
             aria-labelledby="modal-title"
           >
             <button
@@ -1139,12 +1151,16 @@ function Workspace({ auth, session }) {
                 )}
               </>
             )}
-          </section>
+          </Modal>
         </div>
       )}
       {librarian && selectedCopies && (
         <div className="modal-scrim">
-          <section className="modal" role="dialog" aria-modal="true">
+          <Modal
+            className="modal"
+            onClose={() => setSelectedCopies(null)}
+            aria-labelledby="copies-title"
+          >
             <button
               className="modal-close"
               onClick={() => setSelectedCopies(null)}
@@ -1153,7 +1169,7 @@ function Workspace({ auth, session }) {
               ×
             </button>
             <span className="eyebrow">TOMBAMENTO FÍSICO</span>
-            <h2>Exemplares · {selectedCopies.book.titulo}</h2>
+            <h2 id="copies-title">Exemplares · {selectedCopies.book.titulo}</h2>
             <div className="availability-list">
               {selectedCopies.copies.map((copy) => (
                 <div key={copy.id}>
@@ -1206,7 +1222,7 @@ function Workspace({ auth, session }) {
                 Adicionar exemplar
               </button>
             </form>
-          </section>
+          </Modal>
         </div>
       )}
       {selectedReservation && (

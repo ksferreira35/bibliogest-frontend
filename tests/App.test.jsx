@@ -748,3 +748,70 @@ describe('sinopse da obra', () => {
     ).toBeTruthy()
   })
 })
+
+it('bibliotecário cadastra exemplar dentro da obra selecionada e fecha o diálogo pelo teclado', async () => {
+  const handler = apiFetch.getMockImplementation()
+  const copies = []
+  apiFetch.mockImplementation((service, path, options) => {
+    if (path.endsWith('/exemplares')) {
+      if (options?.method === 'POST')
+        copies.push({
+          id: 'copy-1',
+          codigoTombo: JSON.parse(options.body).codigoTombo,
+        })
+      return json([...copies])
+    }
+    return handler(service, path, options)
+  })
+  start(['BIBLIOTECARIO'])
+  await catalogReady()
+  await userEvent.click(
+    screen.getByRole('button', { name: /Gestão do acervo/ }),
+  )
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Exemplares', exact: true }),
+  )
+  await screen.findByRole('dialog')
+  await userEvent.type(screen.getByLabelText('Código do tombo'), 'TESTE-001')
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Adicionar exemplar' }),
+  )
+  await screen.findByText(/TESTE-001/)
+  expect(apiFetch).toHaveBeenCalledWith(
+    'acervo',
+    `/v1/obras/${book.id}/exemplares`,
+    expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ codigoTombo: 'TESTE-001' }),
+    }),
+  )
+  await userEvent.keyboard('{Escape}')
+  expect(screen.queryByRole('dialog')).toBeNull()
+})
+it.each([[], null])(
+  'trata disponibilidade vazia ou inválida sem liberar reserva: %s',
+  async (value) => {
+    const handler = apiFetch.getMockImplementation()
+    apiFetch.mockImplementation((service, path, options) => {
+      if (path.endsWith('/disponibilidade')) return json({ exemplares: value })
+      if (path.endsWith('/exemplares')) return json([])
+      return handler(service, path, options)
+    })
+    start(['LEITOR'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: /Consultar disponibilidade/ }),
+    )
+    if (value)
+      await screen.findByText(
+        'Esta obra não tem exemplares cadastrados no Acervo.',
+      )
+    else
+      await screen.findByText(
+        'A resposta da API de Reservas não contém a lista de exemplares disponíveis.',
+      )
+    expect(
+      screen.queryByRole('button', { name: 'Reservar', exact: true }),
+    ).toBeNull()
+  },
+)

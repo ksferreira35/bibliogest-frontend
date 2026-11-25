@@ -1,3 +1,4 @@
+import Modal from './Modal.jsx'
 import { useState } from 'react'
 import { display } from '../domain/catalog.js'
 
@@ -56,10 +57,12 @@ export default function BookForm({
   }
   return (
     <div className="modal-scrim">
-      <form
+      <Modal
+        as="form"
         className="modal book-form"
-        role="dialog"
-        aria-modal="true"
+        onClose={() => {
+          if (!busy) onClose()
+        }}
         aria-labelledby="book-form-title"
         onSubmit={(event) => {
           event.preventDefault()
@@ -207,7 +210,7 @@ export default function BookForm({
             {book ? 'Salvar alterações' : 'Salvar obra no Acervo'}
           </button>
         </div>
-      </form>
+      </Modal>
     </div>
   )
 }

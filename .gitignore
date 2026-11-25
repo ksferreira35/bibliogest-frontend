@@ -79,3 +79,7 @@ dumps/
 # Resultados de testes
 coverage/
 .vitest/
+
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/

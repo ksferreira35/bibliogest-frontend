@@ -1,3 +1,4 @@
+import Modal from './Modal.jsx'
 import Icon from './Icon.jsx'
 import {
   normalizeReservationStatus,
@@ -127,10 +128,9 @@ export function ReservationDetails({ reservation, onClose }) {
         if (event.target === event.currentTarget) onClose()
       }}
     >
-      <section
+      <Modal
         className="modal"
-        role="dialog"
-        aria-modal="true"
+        onClose={onClose}
         aria-labelledby="reservation-details-title"
       >
         <button className="modal-close" onClick={onClose} aria-label="Fechar">
@@ -169,7 +169,7 @@ export function ReservationDetails({ reservation, onClose }) {
           <dt>Devolução</dt>
           <dd>{formatDateTime(returnedAt)}</dd>
         </dl>
-      </section>
+      </Modal>
     </div>
   )
 }

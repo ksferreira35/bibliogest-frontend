@@ -64,3 +64,7 @@ public/config.dev.json
 **/.env*
 coverage
 .vitest
+
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/

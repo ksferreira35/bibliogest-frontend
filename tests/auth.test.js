@@ -124,3 +124,33 @@ describe('autenticação e envio do token', () => {
     })
   })
 })
+
+it('não permite logout antes de iniciar o cliente', async () => {
+  const { logout } = await import('../src/auth.js')
+  await expect(logout()).rejects.toThrow('não foi inicializado')
+})
+it('mostra indisponibilidade sem tentar autenticação quando falta o endereço do login', async () => {
+  config.keycloakUrl = ''
+  const { initializeAuth } = await import('../src/auth.js')
+  expect(await initializeAuth()).toEqual({ available: false })
+})
+it('falha claramente quando a configuração não pode ser lida', async () => {
+  fetchMock.mockResolvedValue(new Response(null, { status: 503 }))
+  const { initializeAuth } = await import('../src/auth.js')
+  await expect(initializeAuth()).rejects.toThrow(
+    'Configuração de autenticação indisponível',
+  )
+})
+it('rejeita serviços desconhecidos, caminho relativo e token vazio após renovação', async () => {
+  const { apiFetch } = await import('../src/auth.js')
+  await expect(apiFetch('outro', '/v1/obras')).rejects.toThrow(
+    'Caminho de API inválido',
+  )
+  await expect(apiFetch('acervo', 'relativo')).rejects.toThrow(
+    'Caminho de API inválido',
+  )
+  state.account.updateToken.mockImplementation(async () => {
+    state.account.token = ''
+  })
+  await expect(apiFetch('acervo', '/v1/obras')).rejects.toThrow('Faça login')
+})
