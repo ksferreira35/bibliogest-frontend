@@ -75,3 +75,7 @@ dumps/
 
 # Backups do editor
 *~
+
+# Resultados de testes
+coverage/
+.vitest/
