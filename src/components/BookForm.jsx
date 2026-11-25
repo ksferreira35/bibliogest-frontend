@@ -16,6 +16,7 @@ export default function BookForm({
     autorIds: book?.autor?.map((author) => author.id) || [],
     volume: book?.volume || '',
     isbn: book?.isbn || '',
+    descricao: book?.descricao || '',
   })
   const [categoryName, setCategoryName] = useState('')
   const [authorName, setAuthorName] = useState('')
@@ -68,6 +69,7 @@ export default function BookForm({
             autorIds: form.autorIds,
             volume: form.volume.trim() || null,
             isbn: form.isbn.trim() || null,
+            descricao: form.descricao.trim() || null,
           })
         }}
       >
@@ -180,6 +182,20 @@ export default function BookForm({
             />
           </label>
         </div>
+        <label>
+          Descrição (opcional)
+          <textarea
+            rows={6}
+            maxLength={5000}
+            value={form.descricao}
+            onChange={(event) => set('descricao', event.target.value)}
+            placeholder="Escreva uma sinopse da obra…"
+            aria-describedby="descricao-ajuda"
+          />
+        </label>
+        <small id="descricao-ajuda" className="description-hint">
+          {form.descricao.length}/5000 caracteres
+        </small>
         <div className="form-actions">
           <button type="button" className="button secondary" onClick={onClose}>
             Cancelar

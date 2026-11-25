@@ -59,6 +59,7 @@ beforeEach(() => {
         titulo: payload.titulo,
         volume: payload.volume,
         isbn: payload.isbn,
+        descricao: payload.descricao,
         autor: payload.autorIds.map((id) => ({
           id,
           nome: id === 'autor-correto' ? 'Jung Ji-hoon' : 'Sui Ishida',
@@ -526,6 +527,7 @@ describe('edição, exclusão e paginação de obras', () => {
       autorIds: ['autor-correto'],
       volume: null,
       isbn: null,
+      descricao: null,
     })
   })
 
@@ -714,5 +716,35 @@ describe('edição, exclusão e paginação de obras', () => {
       ),
     )
     expect(screen.getByRole('heading', { name: 'Tokyo Ghoul' })).toBeTruthy()
+  })
+})
+
+describe('sinopse da obra', () => {
+  it('exibe a descrição para o leitor como texto, sem interpretar HTML', async () => {
+    books[0].descricao = 'Primeiro parágrafo.\n\n<img src=x onerror=alert(1)>'
+    start(['LEITOR'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Ver detalhes de Tokyo Ghoul' }),
+    )
+    const section = within(screen.getByRole('dialog')).getByRole('region', {
+      name: 'Sinopse',
+    })
+    expect(section.textContent).toContain('Primeiro parágrafo.')
+    expect(section.textContent).toContain('<img src=x onerror=alert(1)>')
+    expect(section.querySelector('img')).toBeNull()
+  })
+
+  it('explica quando a sinopse ainda não foi cadastrada', async () => {
+    start(['LEITOR'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Ver detalhes de Tokyo Ghoul' }),
+    )
+    expect(
+      within(screen.getByRole('dialog')).getByText(
+        'Sinopse ainda não cadastrada.',
+      ),
+    ).toBeTruthy()
   })
 })

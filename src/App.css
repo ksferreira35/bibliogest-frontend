@@ -48,3 +48,11 @@
 .pagination label { display: flex; align-items: center; gap: 8px; }
 .pagination select { padding: 7px; border: 1px solid var(--line); background: #191a1e; color: var(--text); }
 @media (max-width: 800px) { .manage-row { grid-template-columns: 37px minmax(0,1fr); } .manage-actions { grid-column: 2; justify-content: flex-start; } .manage-row > span { display: none; } }
+
+.book-form textarea { width: 100%; min-height: 140px; resize: vertical; padding: 12px; border: 1px solid var(--line); background: #191a1e; color: var(--text); font: inherit; font-size: 12px; line-height: 1.7; }
+.book-form textarea:focus { outline: 1px solid #84424c; }
+.book-synopsis { margin: 22px 0; }
+.book-synopsis h3 { color: var(--text); font-size: 15px; margin-bottom: 10px; }
+.book-synopsis p { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); font-size: 13px; line-height: 1.8; }
+
+.description-hint { color: var(--dim); font-size: 10px; margin-top: -8px; }

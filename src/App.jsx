@@ -1064,6 +1064,12 @@ function Workspace({ auth, session }) {
                   {authorNames(selectedBook.autor)} ·{' '}
                   {display(selectedBook.categoria)}
                 </p>
+                <section className="book-synopsis" aria-label="Sinopse">
+                  <h3>Sinopse</h3>
+                  <p>
+                    {selectedBook.descricao || 'Sinopse ainda não cadastrada.'}
+                  </p>
+                </section>
                 <dl className="book-details">
                   <dt>ISBN</dt>
                   <dd>{selectedBook.isbn || '—'}</dd>

@@ -1,7 +1,7 @@
 {
   "name": "bibliogest-frontend",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Interface web do BiblioGest para consultar o acervo e reservar exemplares físicos.",
   "repository": {
     "type": "git",
