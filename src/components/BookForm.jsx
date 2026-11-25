@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { display } from '../domain/catalog.js'
 
 export default function BookForm({
+  book,
   categories,
   authors,
   busy,
@@ -10,11 +11,11 @@ export default function BookForm({
   onCreateSupport,
 }) {
   const [form, setForm] = useState({
-    titulo: '',
-    categoriaId: '',
-    autorIds: [],
-    volume: '',
-    isbn: '',
+    titulo: book?.titulo || '',
+    categoriaId: book?.categoria?.id || '',
+    autorIds: book?.autor?.map((author) => author.id) || [],
+    volume: book?.volume || '',
+    isbn: book?.isbn || '',
   })
   const [categoryName, setCategoryName] = useState('')
   const [authorName, setAuthorName] = useState('')
@@ -56,14 +57,17 @@ export default function BookForm({
     <div className="modal-scrim">
       <form
         className="modal book-form"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="book-form-title"
         onSubmit={(event) => {
           event.preventDefault()
           onSubmit({
-            titulo: form.titulo,
+            titulo: form.titulo.trim(),
             categoriaId: form.categoriaId,
             autorIds: form.autorIds,
-            ...(form.volume && { volume: form.volume }),
-            ...(form.isbn && { isbn: form.isbn }),
+            volume: form.volume.trim() || null,
+            isbn: form.isbn.trim() || null,
           })
         }}
       >
@@ -75,12 +79,15 @@ export default function BookForm({
         >
           ×
         </button>
-        <span className="eyebrow">ACERVO · NOVO REGISTRO</span>
-        <h2>Cadastrar obra</h2>
+        <span className="eyebrow">
+          ACERVO · {book ? 'EDIÇÃO DO REGISTRO' : 'NOVO REGISTRO'}
+        </span>
+        <h2 id="book-form-title">{book ? 'Editar obra' : 'Cadastrar obra'}</h2>
         <label>
           Título
           <input
             required
+            maxLength={100}
             value={form.titulo}
             onChange={(event) => set('titulo', event.target.value)}
           />
@@ -159,6 +166,7 @@ export default function BookForm({
           <label>
             Volume (opcional)
             <input
+              maxLength={50}
               value={form.volume}
               onChange={(event) => set('volume', event.target.value)}
             />
@@ -166,6 +174,7 @@ export default function BookForm({
           <label>
             ISBN (opcional)
             <input
+              maxLength={30}
               value={form.isbn}
               onChange={(event) => set('isbn', event.target.value)}
             />
@@ -179,7 +188,7 @@ export default function BookForm({
             className="button primary"
             disabled={busy || !form.categoriaId || form.autorIds.length === 0}
           >
-            Salvar obra no Acervo
+            {book ? 'Salvar alterações' : 'Salvar obra no Acervo'}
           </button>
         </div>
       </form>

@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { apiFetch, appRedirectUri, logout as logoutAuth } from './auth.js'
 import {
   authorNames,
   coverUrl,
   display,
-  matchesBook,
   showFallbackCover,
 } from './domain/catalog.js'
 import {
@@ -24,6 +23,7 @@ import {
 } from './components/Reservations.jsx'
 import BookForm from './components/BookForm.jsx'
 import Icon from './components/Icon.jsx'
+import CatalogPagination from './components/CatalogPagination.jsx'
 import './App.css'
 
 function asList(value) {
@@ -74,6 +74,19 @@ function Workspace({ auth, session }) {
   const user = session.name
   const [page, setPage] = useState('catalogo')
   const [books, setBooks] = useState([])
+  const [bookCache, setBookCache] = useState({})
+  const [catalogQuery, setCatalogQuery] = useState({
+    pagina: 0,
+    tamanho: 12,
+    busca: '',
+    categoriaId: '',
+  })
+  const [catalogInfo, setCatalogInfo] = useState({
+    totalElementos: 0,
+    totalPaginas: 0,
+    pagina: 0,
+  })
+  const catalogRequest = useRef(0)
   const [reservationViews, setReservationViews] = useState(() => ({
     mine: emptyReservationView(),
     desk: emptyReservationView(),
@@ -86,9 +99,13 @@ function Workspace({ auth, session }) {
   const [catalogError, setCatalogError] = useState('')
   const viewKey = page === 'balcao' ? 'desk' : 'mine'
   const reservationView = reservationViews[viewKey]
-  const reservations = attachBooks(reservationView.items, books, session)
+  const reservations = attachBooks(
+    reservationView.items,
+    Object.values(bookCache),
+    session,
+  )
   const [query, setQuery] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('Todas as categorias')
+  const [categoryFilter, setCategoryFilter] = useState('')
   const [categories, setCategories] = useState([])
   const [authors, setAuthors] = useState([])
   const [availability, setAvailability] = useState([])
@@ -103,19 +120,64 @@ function Workspace({ auth, session }) {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
+  const [editingBook, setEditingBook] = useState(null)
+  const [deletingBook, setDeletingBook] = useState(null)
+  const [deleteError, setDeleteError] = useState('')
 
+  const cacheBooks = useCallback((items) => {
+    setBookCache((previous) => ({
+      ...previous,
+      ...Object.fromEntries(items.map((item) => [item.id, item])),
+    }))
+  }, [])
+  const cancelCatalog = useCallback(() => {
+    catalogRequest.current++
+  }, [])
   const loadBooks = useCallback(async () => {
+    const requestId = ++catalogRequest.current
+    setCatalogLoading(true)
     try {
-      const data = await request('acervo', '/v1/obras')
-      setBooks(asList(data))
+      const params = new URLSearchParams({
+        pagina: catalogQuery.pagina,
+        tamanho: catalogQuery.tamanho,
+      })
+      if (catalogQuery.busca) params.set('busca', catalogQuery.busca)
+      if (catalogQuery.categoriaId)
+        params.set('categoriaId', catalogQuery.categoriaId)
+      const data = await request('acervo', `/v1/obras?${params}`)
+      if (requestId !== catalogRequest.current) return
+      // Compatibilidade durante a troca da versão publicada da API.
+      const result = Array.isArray(data)
+        ? {
+            content: data,
+            pagina: 0,
+            totalElementos: data.length,
+            totalPaginas: data.length ? 1 : 0,
+          }
+        : data
+      const items = asList(result.content)
+      if (
+        !items.length &&
+        result.totalElementos > 0 &&
+        catalogQuery.pagina > 0
+      ) {
+        setCatalogQuery((current) => ({
+          ...current,
+          pagina: Math.max(0, result.totalPaginas - 1),
+        }))
+        return
+      }
+      setBooks(items)
+      cacheBooks(items)
+      setCatalogInfo(result)
       setCatalogError('')
     } catch (failure) {
-      setCatalogError(failure.message)
+      if (requestId === catalogRequest.current) setCatalogError(failure.message)
       throw failure
     } finally {
-      setCatalogLoading(false)
+      if (requestId === catalogRequest.current) setCatalogLoading(false)
     }
-  }, [])
+  }, [catalogQuery, cacheBooks])
   const loadReservations = useCallback(
     async function loadPage(all = false, requestedPage) {
       if (all && !librarian)
@@ -140,6 +202,17 @@ function Workspace({ auth, session }) {
         }
         return loadPage(all, number - 1)
       }
+      const missing = [...new Set(items.map((item) => item.obraId))].filter(
+        (id) => id && !bookCache[id],
+      )
+      if (missing.length) {
+        const summaries = await request(
+          'acervo',
+          `/v1/obras/resumo?ids=${missing.map(encodeURIComponent).join(',')}`,
+        )
+        if (requestId !== reservationRequests.current[scope]) return
+        cacheBooks(asList(summaries))
+      }
       reservationPages.current[scope] = number
       setReservationViews((current) => ({
         ...current,
@@ -150,7 +223,7 @@ function Workspace({ auth, session }) {
         },
       }))
     },
-    [librarian],
+    [librarian, bookCache, cacheBooks],
   )
   const run = useCallback(async (action, successMessage) => {
     setBusy(true)
@@ -169,16 +242,36 @@ function Workspace({ auth, session }) {
   useEffect(() => {
     if (!signedIn || !canRead) return undefined
     let active = true
-    request('acervo', '/v1/obras')
+    Promise.resolve()
+      .then(() => {
+        if (active) return loadBooks()
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+      cancelCatalog()
+    }
+  }, [signedIn, canRead, loadBooks, cancelCatalog])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setCatalogQuery((current) =>
+        current.busca === query.trim()
+          ? current
+          : { ...current, busca: query.trim(), pagina: 0 },
+      )
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [query])
+
+  useEffect(() => {
+    if (!signedIn || !canRead) return undefined
+    let active = true
+    request('acervo', '/v1/categorias')
       .then((data) => {
-        if (active) setBooks(asList(data))
+        if (active) setCategories(asList(data))
       })
-      .catch((failure) => {
-        if (active) setCatalogError(failure.message)
-      })
-      .finally(() => {
-        if (active) setCatalogLoading(false)
-      })
+      .catch(() => {})
     return () => {
       active = false
     }
@@ -195,18 +288,90 @@ function Workspace({ auth, session }) {
 
   useEffect(() => () => availabilityRequest.current?.abort(), [])
 
-  const filteredBooks = useMemo(
-    () => books.filter((book) => matchesBook(book, query, categoryFilter)),
-    [books, query, categoryFilter],
+  const filteredBooks = books
+  const catalogControls = (
+    <section className="catalog-controls">
+      <label className="search-box">
+        <Icon>search</Icon>
+        <input
+          value={query}
+          maxLength={100}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Busque por título, autor ou ISBN"
+        />
+      </label>
+      <select
+        value={categoryFilter}
+        onChange={(event) => {
+          const id = event.target.value
+          setCategoryFilter(id)
+          setCatalogQuery((current) => ({
+            ...current,
+            categoriaId: id,
+            pagina: 0,
+          }))
+        }}
+        aria-label="Filtrar por categoria"
+      >
+        <option value="">Todas as categorias</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.nome}
+          </option>
+        ))}
+      </select>
+      <span className="result-count">
+        {catalogInfo.totalElementos}{' '}
+        {catalogInfo.totalElementos === 1 ? 'OBRA' : 'OBRAS'}
+      </span>
+    </section>
   )
-  const categoryNames = useMemo(
-    () => [
-      ...new Set(
-        books.map((book) => display(book.categoria)).filter((x) => x !== '—'),
-      ),
-    ],
-    [books],
+  const catalogPagination = (
+    <CatalogPagination
+      info={catalogInfo}
+      size={catalogQuery.tamanho}
+      busy={catalogLoading || busy}
+      onChange={(pagina) =>
+        setCatalogQuery((current) => ({ ...current, pagina }))
+      }
+      onSize={(tamanho) =>
+        setCatalogQuery((current) => ({ ...current, tamanho, pagina: 0 }))
+      }
+    />
   )
+
+  async function openBookForm(book = null) {
+    if (!librarian) return
+    await run(async () => {
+      await loadManageData()
+      setEditingBook(book)
+      setFormOpen(true)
+    })
+  }
+
+  async function deleteBook() {
+    if (!librarian || !deletingBook || busy) return
+    setDeleteError('')
+    await run(async () => {
+      try {
+        await request(
+          'acervo',
+          `/v1/obras/${encodeURIComponent(deletingBook.id)}`,
+          { method: 'DELETE' },
+        )
+        setBookCache((current) => {
+          const next = { ...current }
+          delete next[deletingBook.id]
+          return next
+        })
+        setDeletingBook(null)
+        await loadBooks()
+      } catch (failure) {
+        setDeleteError(failure.message)
+        throw failure
+      }
+    }, 'Obra excluída do Acervo.')
+  }
 
   function closeBook() {
     availabilityRequest.current?.abort()
@@ -353,7 +518,11 @@ function Workspace({ auth, session }) {
         (item) => String(item.id ?? item.reservaId) === String(id),
       )
       setSelectedReservation(
-        attachBooks([{ ...row, ...detail }], books, session)[0],
+        attachBooks(
+          [{ ...row, ...detail }],
+          Object.values(bookCache),
+          session,
+        )[0],
       )
     })
   }
@@ -521,36 +690,11 @@ function Workspace({ auth, session }) {
               </div>
               <div className="hero-note">
                 <span>ACERVO VIVO</span>
-                <strong>
-                  {books.length ? `${books.length} obras` : 'BIBLIOTECA'}
-                </strong>
+                <strong>{`${catalogInfo.totalElementos} obras`}</strong>
                 <small>ATUALIZADO DIRETO DO ACERVO</small>
               </div>
             </section>
-            <section className="catalog-controls">
-              <label className="search-box">
-                <Icon>search</Icon>
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Busque por título, autor ou ISBN"
-                />
-              </label>
-              <select
-                value={categoryFilter}
-                onChange={(event) => setCategoryFilter(event.target.value)}
-                aria-label="Filtrar por categoria"
-              >
-                <option>Todas as categorias</option>
-                {categoryNames.map((name) => (
-                  <option key={name}>{name}</option>
-                ))}
-              </select>
-              <span className="result-count">
-                {filteredBooks.length}{' '}
-                {filteredBooks.length === 1 ? 'OBRA' : 'OBRAS'}
-              </span>
-            </section>
+            {catalogControls}
             {catalogLoading ? (
               <div className="empty-state">
                 <Icon>menu_book</Icon>
@@ -578,12 +722,12 @@ function Workspace({ auth, session }) {
             ) : filteredBooks.length === 0 ? (
               <div className="empty-state">
                 <h2>
-                  {books.length
+                  {catalogQuery.busca || catalogQuery.categoriaId
                     ? 'Nenhuma obra encontrada'
                     : 'Nenhuma obra cadastrada'}
                 </h2>
                 <p>
-                  {books.length
+                  {catalogQuery.busca || catalogQuery.categoriaId
                     ? 'Tente outro título, autor, ISBN ou categoria.'
                     : 'O catálogo será exibido quando as obras forem cadastradas.'}
                 </p>
@@ -631,6 +775,7 @@ function Workspace({ auth, session }) {
                 ))}
               </div>
             )}
+            {!catalogError && catalogPagination}
           </>
         )}
 
@@ -672,86 +817,139 @@ function Workspace({ auth, session }) {
             <PageHeading
               kicker="BIBLIOTECÁRIO · CURADORIA TÉCNICA"
               title="Gestão do acervo"
-              description="Consulte o catálogo e cadastre obras diretamente no Acervo institucional."
+              description="Cadastre, edite e organize as obras do Acervo institucional."
             />
             <div className="section-bar">
-              <span>{books.length} OBRAS NO ACERVO</span>
+              <span>{catalogInfo.totalElementos} OBRAS ENCONTRADAS</span>
               <button
                 className="button primary"
-                onClick={() => {
-                  setFormOpen(true)
-                  run(loadManageData)
-                }}
+                disabled={busy}
+                onClick={() => openBookForm()}
               >
                 <Icon>add</Icon> Cadastrar obra
               </button>
             </div>
-            <div className="manage-list">
-              {books.map((book) => (
-                <article key={book.id} className="manage-row">
-                  <img
-                    src={coverUrl(book, coverVersions)}
-                    alt={`Capa de ${book.titulo}`}
-                    onError={showFallbackCover}
-                  />
-                  <div>
-                    <strong>{book.titulo}</strong>
-                    <small>
-                      {authorNames(book.autor)} · {display(book.categoria)}
-                    </small>
-                  </div>
-                  <span>#{book.id}</span>
-                  <button
-                    className="upload-button"
-                    onClick={() => openCopies(book)}
-                  >
-                    Exemplares
-                  </button>
-                  <label className="upload-button">
-                    Enviar capa
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0]
-                        if (!file) return
-                        const data = new FormData()
-                        data.append('arquivo', file)
-                        run(async () => {
-                          await request(
-                            'acervo',
-                            `/v1/obras/${encodeURIComponent(book.id)}/capa`,
-                            { method: 'PUT', body: data },
-                          )
-                          setCoverVersions((current) => ({
-                            ...current,
-                            [book.id]: Date.now(),
-                          }))
-                          await loadBooks()
-                        }, 'Capa atualizada no Acervo.')
-                      }}
+            {catalogControls}
+            {catalogError && (
+              <p role="alert">
+                {catalogError}
+                <button
+                  className="button secondary"
+                  onClick={() => run(loadBooks)}
+                >
+                  Tentar novamente
+                </button>
+              </p>
+            )}
+            {catalogLoading ? (
+              <p role="status">Carregando obras…</p>
+            ) : (
+              <div className="manage-list">
+                {books.map((book) => (
+                  <article key={book.id} className="manage-row">
+                    <img
+                      src={coverUrl(book, coverVersions)}
+                      alt={`Capa de ${book.titulo}`}
+                      onError={showFallbackCover}
                     />
-                  </label>
-                </article>
-              ))}
-            </div>
+                    <div>
+                      <strong>{book.titulo}</strong>
+                      <small>
+                        {authorNames(book.autor)} · {display(book.categoria)}
+                      </small>
+                    </div>
+                    <span>#{book.id}</span>
+                    <div className="manage-actions">
+                      <button
+                        className="upload-button"
+                        disabled={busy}
+                        onClick={() => openBookForm(book)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="upload-button danger-button"
+                        disabled={busy}
+                        onClick={() => {
+                          setDeleteError('')
+                          setDeletingBook(book)
+                        }}
+                      >
+                        Excluir
+                      </button>
+                      <button
+                        className="upload-button"
+                        disabled={busy}
+                        onClick={() => openCopies(book)}
+                      >
+                        Exemplares
+                      </button>
+                      <label className="upload-button">
+                        Enviar capa
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            if (!file) return
+                            const data = new FormData()
+                            data.append('arquivo', file)
+                            run(async () => {
+                              await request(
+                                'acervo',
+                                `/v1/obras/${encodeURIComponent(book.id)}/capa`,
+                                { method: 'PUT', body: data },
+                              )
+                              setCoverVersions((current) => ({
+                                ...current,
+                                [book.id]: Date.now(),
+                              }))
+                              await loadBooks()
+                            }, 'Capa atualizada no Acervo.')
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </article>
+                ))}
+                {!books.length && !catalogError && (
+                  <p>Nenhuma obra encontrada.</p>
+                )}
+              </div>
+            )}
+            {!catalogError && catalogPagination}
             {formOpen && (
               <BookForm
+                key={editingBook?.id || 'new'}
+                book={editingBook}
                 categories={categories}
                 authors={authors}
                 busy={busy}
                 onClose={() => setFormOpen(false)}
                 onCreateSupport={createSupportRecord}
                 onSubmit={(payload) =>
-                  run(async () => {
-                    await request('acervo', '/v1/obras', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(payload),
-                    })
-                    setFormOpen(false)
-                    await loadBooks()
-                  }, 'Obra cadastrada no Acervo.')
+                  run(
+                    async () => {
+                      if (!librarian) return
+                      const saved = await request(
+                        'acervo',
+                        editingBook
+                          ? `/v1/obras/${encodeURIComponent(editingBook.id)}`
+                          : '/v1/obras',
+                        {
+                          method: editingBook ? 'PUT' : 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(payload),
+                        },
+                      )
+                      cacheBooks([saved])
+                      setFormOpen(false)
+                      await loadBooks()
+                    },
+                    editingBook
+                      ? 'Obra atualizada no Acervo.'
+                      : 'Obra cadastrada no Acervo.',
+                  )
                 }
               />
             )}
@@ -800,6 +998,44 @@ function Workspace({ auth, session }) {
         )}
       </main>
 
+      {librarian && deletingBook && (
+        <div className="modal-scrim">
+          <section
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-title"
+          >
+            <h2 id="delete-title">Excluir obra?</h2>
+            <p>Deseja excluir “{deletingBook.titulo}” do Acervo?</p>
+            <p>
+              Obras com exemplares vinculados não podem ser excluídas. Essa
+              proteção preserva os registros usados pelas reservas.
+            </p>
+            {deleteError && (
+              <p role="alert" className="inline-error">
+                {deleteError}
+              </p>
+            )}
+            <div className="form-actions">
+              <button
+                className="button secondary"
+                disabled={busy}
+                onClick={() => setDeletingBook(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="button primary danger-button"
+                disabled={busy}
+                onClick={deleteBook}
+              >
+                Confirmar exclusão
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       {selectedBook && (
         <div
           className="modal-scrim"
@@ -944,7 +1180,10 @@ function Workspace({ auth, session }) {
                     'acervo',
                     `/v1/obras/${encodeURIComponent(selectedCopies.book.id)}/exemplares`,
                   )
-                  setSelectedCopies({ ...selectedCopies, copies: asList(data) })
+                  setSelectedCopies({
+                    ...selectedCopies,
+                    copies: asList(data),
+                  })
                 }, 'Exemplar cadastrado no Acervo.')
               }}
             >

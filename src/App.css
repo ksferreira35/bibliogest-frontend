@@ -41,3 +41,10 @@
 }
 
 .icon { width: 18px; height: 18px; flex-shrink: 0; display: inline-block; }
+
+.manage-row { grid-template-columns: 43px minmax(0,1fr) minmax(100px,220px) auto; }
+.manage-actions { display: flex !important; flex-wrap: wrap; gap: 8px; justify-content: flex-end; max-width: 380px; }
+.danger-button { color: #ffb6be; border-color: #71333e; }
+.pagination label { display: flex; align-items: center; gap: 8px; }
+.pagination select { padding: 7px; border: 1px solid var(--line); background: #191a1e; color: var(--text); }
+@media (max-width: 800px) { .manage-row { grid-template-columns: 37px minmax(0,1fr); } .manage-actions { grid-column: 2; justify-content: flex-start; } .manage-row > span { display: none; } }

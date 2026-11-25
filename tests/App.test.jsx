@@ -19,12 +19,63 @@ let books
 beforeEach(() => {
   mine = [reservation()]
   all = mine
-  books = [book]
+  books = [structuredClone(book)]
   apiFetch.mockImplementation(async (service, path, options = {}) => {
     const url = new URL(path, 'https://test.invalid')
-    if (service === 'acervo' && url.pathname === '/v1/obras') return json(books)
+    if (service === 'acervo' && url.pathname === '/v1/obras') {
+      const query = (url.searchParams.get('busca') || '').toLowerCase()
+      const category = url.searchParams.get('categoriaId')
+      const filtered = books.filter(
+        (item) =>
+          `${item.titulo} ${item.autor.map((a) => a.nome).join(' ')} ${item.isbn || ''}`
+            .toLowerCase()
+            .includes(query) &&
+          (!category || item.categoria.id === category),
+      )
+      const page = Number(url.searchParams.get('pagina') || 0)
+      const size = Number(url.searchParams.get('tamanho') || 20)
+      return json({
+        content: filtered.slice(page * size, (page + 1) * size),
+        pagina: page,
+        tamanho: size,
+        totalElementos: filtered.length,
+        totalPaginas: Math.ceil(filtered.length / size),
+      })
+    }
+    if (url.pathname === '/v1/obras/resumo')
+      return json(
+        books.filter((item) =>
+          url.searchParams.get('ids').split(',').includes(item.id),
+        ),
+      )
+    if (
+      url.pathname.startsWith('/v1/obras/') &&
+      options.method === 'PUT' &&
+      !path.endsWith('/capa')
+    ) {
+      const item = books.find((item) => url.pathname.endsWith(item.id))
+      const payload = JSON.parse(options.body)
+      Object.assign(item, {
+        titulo: payload.titulo,
+        volume: payload.volume,
+        isbn: payload.isbn,
+        autor: payload.autorIds.map((id) => ({
+          id,
+          nome: id === 'autor-correto' ? 'Jung Ji-hoon' : 'Sui Ishida',
+        })),
+      })
+      return json(item)
+    }
+    if (url.pathname.startsWith('/v1/obras/') && options.method === 'DELETE') {
+      books = books.filter((item) => !url.pathname.endsWith(item.id))
+      return new Response(null, { status: 204 })
+    }
     if (path === '/v1/categorias') return json([book.categoria])
-    if (path === '/v1/autores') return json(book.autor)
+    if (path === '/v1/autores')
+      return json([
+        ...book.autor,
+        { id: 'autor-correto', nome: 'Jung Ji-hoon' },
+      ])
     if (path.endsWith('/capa')) return json(book)
     if (path.endsWith('/disponibilidade'))
       return json({
@@ -83,7 +134,10 @@ describe('acesso por perfil', () => {
     expect(screen.queryByText('Enviar capa')).toBeNull()
     expect(
       apiFetch.mock.calls.every(
-        ([service, path]) => service === 'acervo' && path === '/v1/obras',
+        ([service, path, options]) =>
+          service === 'acervo' &&
+          (path.startsWith('/v1/obras?') || path === '/v1/categorias') &&
+          !options?.method,
       ),
     ).toBe(true)
   })
@@ -125,7 +179,9 @@ describe('acesso por perfil', () => {
     await userEvent.click(
       screen.getByRole('button', { name: /Cadastrar obra/ }),
     )
-    expect(screen.getByRole('heading', { name: 'Cadastrar obra' })).toBeTruthy()
+    expect(
+      await screen.findByRole('heading', { name: 'Cadastrar obra' }),
+    ).toBeTruthy()
     act(() => {
       keycloak.roles = ['LEITOR']
       keycloak.onAuthRefreshSuccess()
@@ -388,7 +444,15 @@ describe('catálogo e reservas', () => {
   })
 
   it('diferencia falha da API de catálogo vazio e permite tentar novamente', async () => {
-    apiFetch.mockRejectedValueOnce(new Error('Acervo indisponível.'))
+    const handler = apiFetch.getMockImplementation()
+    let failed = false
+    apiFetch.mockImplementation((service, path, options) => {
+      if (!failed && path.startsWith('/v1/obras?')) {
+        failed = true
+        return Promise.reject(new Error('Acervo indisponível.'))
+      }
+      return handler(service, path, options)
+    })
     start(['LEITOR'])
     await screen.findByRole('heading', {
       name: 'Não foi possível carregar o catálogo',
@@ -423,5 +487,232 @@ describe('catálogo e reservas', () => {
     expect(
       screen.queryByRole('button', { name: 'Registrar devolução' }),
     ).toBeNull()
+  })
+})
+
+describe('edição, exclusão e paginação de obras', () => {
+  it('edita autor e dados opcionais com PUT preservando o ID', async () => {
+    start(['BIBLIOTECARIO'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: /Gestão do acervo/ }),
+    )
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Editar', exact: true }),
+    )
+    const form = within(await screen.findByRole('dialog'))
+    expect(form.getByLabelText('Título').value).toBe('Tokyo Ghoul')
+    await userEvent.deselectOptions(
+      form.getByRole('listbox', { name: /Autor/ }),
+      'autor-1',
+    )
+    await userEvent.selectOptions(
+      form.getByRole('listbox', { name: /Autor/ }),
+      'autor-correto',
+    )
+    await userEvent.clear(form.getByLabelText('Volume (opcional)'))
+    await userEvent.click(
+      form.getByRole('button', { name: 'Salvar alterações' }),
+    )
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(screen.getByText('Jung Ji-hoon · Mangá')).toBeTruthy()
+    const [, path, options] = apiFetch.mock.calls.find(
+      ([, , options]) => options?.method === 'PUT',
+    )
+    expect(path).toBe(`/v1/obras/${book.id}`)
+    expect(JSON.parse(options.body)).toEqual({
+      titulo: book.titulo,
+      categoriaId: book.categoria.id,
+      autorIds: ['autor-correto'],
+      volume: null,
+      isbn: null,
+    })
+  })
+
+  it('só exclui após confirmação explícita e atualiza o catálogo', async () => {
+    start(['BIBLIOTECARIO'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: /Gestão do acervo/ }),
+    )
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Excluir', exact: true }),
+    )
+    expect(
+      apiFetch.mock.calls.some(([, , options]) => options?.method === 'DELETE'),
+    ).toBe(false)
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Cancelar', exact: true }),
+    )
+    expect(screen.queryByRole('dialog')).toBeNull()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Excluir', exact: true }),
+    )
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Confirmar exclusão' }),
+    )
+    await screen.findByText('Obra excluída do Acervo.')
+    expect(screen.queryByText('Tokyo Ghoul')).toBeNull()
+    expect(apiFetch).toHaveBeenCalledWith('acervo', `/v1/obras/${book.id}`, {
+      method: 'DELETE',
+    })
+  })
+
+  it('explica o bloqueio de exclusão sem ocultar uma obra com exemplares', async () => {
+    const handler = apiFetch.getMockImplementation()
+    apiFetch.mockImplementation((service, path, options) =>
+      options?.method === 'DELETE'
+        ? json(
+            {
+              detail:
+                'Esta obra possui exemplares vinculados e não pode ser excluída.',
+            },
+            409,
+          )
+        : handler(service, path, options),
+    )
+    start(['BIBLIOTECARIO'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: /Gestão do acervo/ }),
+    )
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Excluir', exact: true }),
+    )
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Confirmar exclusão' }),
+    )
+    expect(
+      await within(screen.getByRole('dialog')).findByRole('alert'),
+    ).toHaveProperty(
+      'textContent',
+      'Esta obra possui exemplares vinculados e não pode ser excluída.',
+    )
+    expect(screen.queryByText('Obra excluída do Acervo.')).toBeNull()
+  })
+
+  it('leitor não recebe comandos de edição e exclusão', async () => {
+    start(['LEITOR'])
+    await catalogReady()
+    expect(
+      screen.queryByRole('button', { name: 'Editar', exact: true }),
+    ).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: 'Excluir', exact: true }),
+    ).toBeNull()
+  })
+
+  it('carrega outra página da API e reinicia a página ao buscar por autor', async () => {
+    books = Array.from({ length: 13 }, (_, index) => ({
+      ...structuredClone(book),
+      id: `obra-${index}`,
+      titulo: index === 0 ? 'Tokyo Ghoul' : `Obra ${index}`,
+      autor: [
+        {
+          id: `autor-${index}`,
+          nome: index === 12 ? 'Jung Ji-hoon' : 'Sui Ishida',
+        },
+      ],
+    }))
+    start(['LEITOR'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Próxima página' }),
+    )
+    await screen.findByText('Página 2 de 2 · 13 obras')
+    expect(screen.getByRole('heading', { name: 'Obra 12' })).toBeTruthy()
+    await userEvent.type(
+      screen.getByPlaceholderText('Busque por título, autor ou ISBN'),
+      'Jung',
+    )
+    await screen.findByText('Página 1 de 1 · 1 obras')
+    expect(
+      apiFetch.mock.calls.some(
+        ([, path]) => path.includes('pagina=0') && path.includes('busca=Jung'),
+      ),
+    ).toBe(true)
+  })
+
+  it('filtra categoria no servidor e muda o tamanho da página', async () => {
+    start(['LEITOR'])
+    await catalogReady()
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Filtrar por categoria' }),
+      book.categoria.id,
+    )
+    await waitFor(() =>
+      expect(
+        apiFetch.mock.calls.some(([, path]) =>
+          path.includes('categoriaId=categoria-1'),
+        ),
+      ).toBe(true),
+    )
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Obras por página' }),
+      '24',
+    )
+    await waitFor(() =>
+      expect(
+        apiFetch.mock.calls.some(
+          ([, path]) =>
+            path.includes('tamanho=24') && path.includes('pagina=0'),
+        ),
+      ).toBe(true),
+    )
+  })
+
+  it('resolve títulos de reservas fora da página por uma única consulta em lote', async () => {
+    books = Array.from({ length: 13 }, (_, index) => ({
+      ...structuredClone(book),
+      id: index === 0 ? book.id : `obra-${index}`,
+      titulo: index === 0 ? 'Tokyo Ghoul' : `Obra ${index}`,
+    }))
+    mine = [{ ...reservation(), obraId: 'obra-12' }]
+    start(['LEITOR'])
+    await catalogReady()
+    await userEvent.click(
+      screen.getByRole('button', { name: /Minhas reservas/ }),
+    )
+    await screen.findByRole('heading', { name: 'Obra 12' })
+    expect(apiFetch).toHaveBeenCalledWith(
+      'acervo',
+      '/v1/obras/resumo?ids=obra-12',
+      undefined,
+    )
+  })
+
+  it('ignora resposta antiga de uma busca enquanto o usuário filtra outra', async () => {
+    start(['LEITOR'])
+    await catalogReady()
+    const pending = deferred()
+    const handler = apiFetch.getMockImplementation()
+    apiFetch.mockImplementation((service, path, options) =>
+      path.includes('busca=antiga')
+        ? pending.promise
+        : handler(service, path, options),
+    )
+    const search = screen.getByPlaceholderText(
+      'Busque por título, autor ou ISBN',
+    )
+    await userEvent.type(search, 'antiga')
+    await waitFor(() =>
+      expect(
+        apiFetch.mock.calls.some(([, path]) => path.includes('busca=antiga')),
+      ).toBe(true),
+    )
+    await userEvent.clear(search)
+    await userEvent.type(search, 'Tokyo')
+    await waitFor(() =>
+      expect(
+        apiFetch.mock.calls.some(([, path]) => path.includes('busca=Tokyo')),
+      ).toBe(true),
+    )
+    await screen.findByRole('heading', { name: 'Tokyo Ghoul' })
+    await act(async () =>
+      pending.resolve(
+        json({ content: [], pagina: 0, totalElementos: 0, totalPaginas: 0 }),
+      ),
+    )
+    expect(screen.getByRole('heading', { name: 'Tokyo Ghoul' })).toBeTruthy()
   })
 })
