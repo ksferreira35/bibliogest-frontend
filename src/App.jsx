@@ -24,6 +24,7 @@ import {
 import BookForm from './components/BookForm.jsx'
 import Icon from './components/Icon.jsx'
 import CatalogPagination from './components/CatalogPagination.jsx'
+import UsersPanel from './components/UsersPanel.jsx'
 import Accessibility from './components/Accessibility.jsx'
 import Modal from './components/Modal.jsx'
 import './App.css'
@@ -64,7 +65,7 @@ async function request(service, path, options) {
 
 function App({ auth }) {
   const session = useSession(auth?.keycloak)
-  const identity = `${session.subject}:${session.signedIn}:${session.reader}:${session.librarian}`
+  const identity = `${session.subject}:${session.signedIn}:${session.reader}:${session.librarian}:${session.administrator}`
   return (
     <>
       <a className="skip-link" href="#conteudo">
@@ -81,8 +82,13 @@ function Workspace({ auth, session }) {
   const signedIn = session.signedIn
   const librarian = session.librarian
   const canRead = session.reader || librarian
+  const authorized = canRead || session.administrator
   const user = session.name
-  const [page, setPage] = useState('catalogo')
+  const [page, setPage] = useState(
+    session.administrator && !session.reader && !librarian
+      ? 'usuarios'
+      : 'catalogo',
+  )
   const [books, setBooks] = useState([])
   const [bookCache, setBookCache] = useState({})
   const [catalogQuery, setCatalogQuery] = useState({
@@ -596,7 +602,7 @@ function Workspace({ auth, session }) {
       </main>
     )
 
-  if (!canRead)
+  if (!authorized)
     return (
       <main id="conteudo" tabIndex={-1} className="empty-state" role="alert">
         <h1>Acesso não autorizado</h1>
@@ -608,8 +614,12 @@ function Workspace({ auth, session }) {
     )
 
   const nav = [
-    ['catalogo', 'Catálogo', 'menu_book'],
-    ['reservas', 'Minhas reservas', 'bookmark'],
+    ...(canRead
+      ? [
+          ['catalogo', 'Catálogo', 'menu_book'],
+          ['reservas', 'Minhas reservas', 'bookmark'],
+        ]
+      : []),
   ]
   if (librarian)
     nav.push(
@@ -617,10 +627,15 @@ function Workspace({ auth, session }) {
       ['balcao', 'Balcão', 'sync_alt'],
     )
 
+  if (session.administrator) nav.push(['usuarios', 'Usuários', 'library_books'])
+
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button className="brand" onClick={() => setPage('catalogo')}>
+        <button
+          className="brand"
+          onClick={() => setPage(canRead ? 'catalogo' : 'usuarios')}
+        >
           <span className="brand-mark">BG</span>
           <span>
             <strong>BiblioGest</strong>
@@ -634,6 +649,7 @@ function Workspace({ auth, session }) {
               className={page === id ? 'active' : ''}
               aria-current={page === id ? 'page' : undefined}
               onClick={() => {
+                if (id === 'usuarios' && !session.administrator) return
                 if ((id === 'gestao' || id === 'balcao') && !librarian) return
                 setPage(id)
                 setError('')
@@ -651,7 +667,13 @@ function Workspace({ auth, session }) {
           <div className="avatar">{user.slice(0, 1).toUpperCase()}</div>
           <div className="account-label">
             <strong>{user}</strong>
-            <small>{librarian ? 'BIBLIOTECÁRIO' : 'LEITOR'}</small>
+            <small>
+              {session.administrator
+                ? 'ADMINISTRADOR'
+                : librarian
+                  ? 'BIBLIOTECÁRIO'
+                  : 'LEITOR'}
+            </small>
           </div>
           <button
             className="icon-button"
@@ -684,6 +706,9 @@ function Workspace({ auth, session }) {
           </div>
         )}
 
+        {page === 'usuarios' && session.administrator && (
+          <UsersPanel subject={session.subject} />
+        )}
         {page === 'catalogo' && (
           <>
             <section className="catalog-hero">

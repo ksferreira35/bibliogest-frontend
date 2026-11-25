@@ -56,3 +56,6 @@
 .book-synopsis p { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); font-size: 0.8125rem; line-height: 1.8; }
 
 .description-hint { color: var(--dim); font-size: 0.625rem; margin-top: -8px; }
+
+.user-row { grid-template-columns: minmax(0,1fr) auto auto; }.user-row small { overflow-wrap:anywhere; }.audit-panel article { border-bottom:1px solid var(--line); padding:12px 0; }.audit-panel p { color:var(--muted); font-size:.8rem;overflow-wrap:anywhere; }
+@media(max-width:600px){.user-row{grid-template-columns:1fr auto}.user-row button{grid-column:1/-1;justify-self:start}}

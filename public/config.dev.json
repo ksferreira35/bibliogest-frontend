@@ -4,5 +4,6 @@
   "clientId": "bibliogest-react",
   "logoutRedirectUri": "http://localhost:5173",
   "acervoUrl": "/acervo/api",
-  "reservasUrl": "/reservas/api"
+  "reservasUrl": "/reservas/api",
+  "usuariosUrl": "/usuarios/api"
 }

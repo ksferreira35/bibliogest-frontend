@@ -835,3 +835,22 @@ it('balcão mostra o nome de outro leitor, sem expor seu UUID ou usar o nome do 
   expect(modal.queryByText('ID do usuário')).toBeNull()
   expect(modal.queryByText('uuid-do-outro-leitor')).toBeNull()
 })
+
+it('administrador sem perfil de bibliotecário recebe somente a administração de contas', async () => {
+  const original = apiFetch.getMockImplementation()
+  apiFetch.mockImplementation((service, path, options) =>
+    service === 'usuarios' ? json([]) : original(service, path, options),
+  )
+  const keycloak = start(['ADMINISTRADOR'])
+  await screen.findByRole('heading', { name: 'Usuários da biblioteca' })
+  expect(screen.queryByRole('button', { name: /Balcão/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /Gestão do acervo/ })).toBeNull()
+  act(() => {
+    keycloak.roles = ['LEITOR']
+    keycloak.onAuthRefreshSuccess()
+  })
+  await catalogReady()
+  expect(
+    screen.queryByRole('heading', { name: 'Usuários da biblioteca' }),
+  ).toBeNull()
+})

@@ -51,9 +51,11 @@ async function initialize() {
 export async function apiFetch(service, path, options = {}) {
   await initializeAuth()
   if (!keycloak?.authenticated) throw new Error('Faça login para continuar')
-  const base = { acervo: config.acervoUrl, reservas: config.reservasUrl }[
-    service
-  ]
+  const base = {
+    acervo: config.acervoUrl,
+    reservas: config.reservasUrl,
+    usuarios: config.usuariosUrl,
+  }[service]
   if (!base || !path.startsWith('/') || path.startsWith('//')) {
     throw new Error('Caminho de API inválido')
   }

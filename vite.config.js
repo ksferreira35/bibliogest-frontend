@@ -32,6 +32,10 @@ export default defineConfig(({ mode, command }) => {
                 target: 'https://bibliogest.ksferreira.org',
                 changeOrigin: true,
               },
+              '/usuarios': {
+                target: 'http://127.0.0.1:8082',
+                changeOrigin: true,
+              },
               '/reservas': {
                 target: 'https://bibliogest.ksferreira.org',
                 changeOrigin: true,

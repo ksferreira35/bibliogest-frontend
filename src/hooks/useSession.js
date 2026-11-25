@@ -11,6 +11,8 @@ function snapshot(account) {
       account?.tokenParsed?.preferred_username ||
       'Leitor',
     reader: signedIn && account?.hasRealmRole?.('LEITOR') === true,
+    administrator:
+      signedIn && account?.hasRealmRole?.('ADMINISTRADOR') === true,
     librarian: signedIn && account?.hasRealmRole?.('BIBLIOTECARIO') === true,
   })
 }
