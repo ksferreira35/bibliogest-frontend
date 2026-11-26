@@ -227,3 +227,40 @@ html[data-contrast="true"] .button:is(:hover,:focus,:disabled) { background: #00
 @media (max-width: 600px) {
   .login-brand { flex-wrap: wrap; }
 }
+
+
+/* Tema claro CEUB */
+.topbar {
+  --text: #301a3b;
+  --muted: #554360;
+  --dim: #5e4b69;
+  --line: #dbcbe5;
+  --red-soft: #8f0b68;
+  --red: #a50b78;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.icon-button { color: var(--muted); }
+.icon-button:hover { color: var(--red-soft); }
+.catalog-hero {
+  --text: #301a3b;
+  --muted: #4f3b5b;
+  --dim: #53405f;
+  --red-soft: #891164;
+  background: linear-gradient(90deg, rgba(250, 246, 252, .98) 0%, rgba(250, 246, 252, .96) 45%, rgba(250, 246, 252, .88) 100%), url('../imagens_site/banner.jpg') center 54% / cover no-repeat;
+}
+.hero-note { border-color: #bca2c9; }
+.login-art {
+  background: linear-gradient(0deg, rgba(247, 240, 250, .97), rgba(247, 240, 250, .88)), url('../imagens_site/banner.jpg') center / cover;
+}
+.login-art::after { background: linear-gradient(115deg, rgba(173, 8, 123, .06), transparent 65%); }
+.login-art .eyebrow, .login-quote h1 { color: #301a3b; }
+.quote-mark { color: #95116f; }
+.login-quote p, .login-foot { color: #554360; }
+html[data-contrast="true"] .topbar { background: #000; }
+html[data-contrast="true"] .catalog-hero { background: #000; --text: #fff; }
+html[data-contrast="true"] .login-art { background: #000; }
+html[data-contrast="true"] .login-art .eyebrow,
+html[data-contrast="true"] .login-quote h1,
+html[data-contrast="true"] .login-quote p,
+html[data-contrast="true"] .login-foot { color: #fff; }
