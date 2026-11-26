@@ -75,3 +75,25 @@ button { font-family: inherit; }
 nav { background: transparent; box-shadow: none; color: inherit; line-height: normal; height: auto; }
 html[data-contrast="true"] { color-scheme: dark; --md-sys-color-primary: #ffca69; --md-sys-color-on-primary: #000; --md-sys-color-surface: #000; --md-sys-color-on-surface: #fff; --md-sys-color-on-background: #fff; }
 label { color: inherit; }
+
+html[data-theme="dark"]:not([data-contrast="true"]) {
+  color-scheme: dark;
+  --bg: #17121d;
+  --surface: #251d2d;
+  --surface-2: #302439;
+  --surface-3: #3b2b46;
+  --line: #574461;
+  --text: #f7edf9;
+  --muted: #ddcce5;
+  --dim: #cbb8d5;
+  --red: #e85abc;
+  --red-soft: #f6a8e0;
+  --green: #9eddb5;
+  --md-sys-color-primary: #f4a1dd;
+  --md-sys-color-on-primary: #35102c;
+  --md-sys-color-primary-container: #542044;
+  --md-sys-color-secondary: #dfbaf0;
+  --md-sys-color-secondary-container: #483052;
+  --md-sys-color-on-secondary-container: #f7eafa;
+  --md-sys-color-outline: #af91bf;
+}

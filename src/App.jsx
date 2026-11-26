@@ -64,6 +64,23 @@ async function request(service, path, options) {
 }
 
 function App({ auth }) {
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('bibliogest-theme') === 'dark' ? 'dark' : 'light'
+    } catch {
+      return 'light'
+    }
+  })
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    try {
+      localStorage.setItem('bibliogest-theme', theme)
+    } catch {
+      // Preference remains available for the current session.
+    }
+  }, [theme])
+  const toggleTheme = () => setTheme(current => current === 'dark' ? 'light' : 'dark')
+
   const session = useSession(auth?.keycloak)
   const identity = `${session.subject}:${session.signedIn}:${session.reader}:${session.librarian}:${session.administrator}`
   return (
@@ -71,13 +88,23 @@ function App({ auth }) {
       <a className="skip-link" href="#conteudo">
         Pular para o conteúdo
       </a>
-      <Workspace key={identity} auth={auth} session={session} />
+      <Workspace key={identity} auth={auth} session={session} theme={theme} toggleTheme={toggleTheme} />
       <Accessibility />
     </>
   )
 }
 
-function Workspace({ auth, session }) {
+function ThemeToggle({ theme, onClick }) {
+  const dark = theme === 'dark'
+  const label = dark ? 'Ativar modo claro' : 'Ativar modo escuro'
+  return (
+    <button type="button" className="theme-toggle" aria-label={label} title={label} onClick={onClick}>
+      <Icon>{dark ? 'sun' : 'moon'}</Icon>
+    </button>
+  )
+}
+
+function Workspace({ auth, session, theme, toggleTheme }) {
   const account = auth?.keycloak
   const signedIn = session.signedIn
   const librarian = session.librarian
@@ -566,6 +593,7 @@ function Workspace({ auth, session }) {
           </div>
         </div>
         <section className="login-panel card-panel">
+          <ThemeToggle theme={theme} onClick={toggleTheme} />
           <div className="login-brand flex items-center gap-4">
             <span className="ceub-logo">
               <img src="/ceub-logo.webp" alt="CEUB" />
@@ -674,6 +702,7 @@ function Workspace({ auth, session }) {
           ))}
         </nav>
         <div className="account">
+          <ThemeToggle theme={theme} onClick={toggleTheme} />
           <div className="avatar">{user.slice(0, 1).toUpperCase()}</div>
           <div className="account-label">
             <strong>{user}</strong>

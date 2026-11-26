@@ -136,6 +136,7 @@ describe('BiblioGest no navegador', () => {
     cy.window().then((win) =>
       expect(Object.keys(win.localStorage)).to.deep.eq([
         'bibliogest-accessibility',
+        'bibliogest-theme',
       ]),
     )
   })
@@ -228,4 +229,17 @@ it('mantém a marca CEUB e a grade responsiva sem rolagem horizontal', () => {
   cy.document().its('documentElement.scrollWidth').should('be.lte', 1200)
   cy.viewport(390, 600)
   cy.get('.book-grid').invoke('css','gridTemplateColumns').should('match', /^[0-9.]+px [0-9.]+px$/)
+})
+
+it('alterna o tema e preserva a preferência após recarregar', () => {
+  visit()
+  cy.contains('h2', 'Tokyo Ghoul').should('be.visible')
+  cy.get('html').should('have.attr', 'data-theme', 'light')
+  cy.get('[aria-label="Ativar modo escuro"]').click()
+  cy.get('html').should('have.attr', 'data-theme', 'dark')
+  audit()
+  cy.reload()
+  cy.get('html').should('have.attr', 'data-theme', 'dark')
+  cy.get('[aria-label="Ativar modo claro"]').click()
+  cy.get('html').should('have.attr', 'data-theme', 'light')
 })

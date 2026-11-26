@@ -266,3 +266,54 @@ html[data-contrast="true"] .login-art .eyebrow,
 html[data-contrast="true"] .login-quote h1,
 html[data-contrast="true"] .login-quote p,
 html[data-contrast="true"] .login-foot { color: #fff; }
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--red-soft);
+  cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--red); }
+.login-panel { position: relative; background: var(--surface); }
+.login-panel > .theme-toggle { position: absolute; top: 12px; right: 12px; }
+html[data-theme="dark"]:not([data-contrast="true"]) .topbar {
+  --text: #f7edf9;
+  --muted: #ddcce5;
+  --dim: #cbb8d5;
+  --line: #574461;
+  --red-soft: #f6a8e0;
+  --red: #e85abc;
+  background: var(--surface);
+}
+html[data-theme="dark"]:not([data-contrast="true"]) .catalog-hero {
+  --text: #fff;
+  --muted: #f3e5fa;
+  --dim: #e9d7f0;
+  --red-soft: #ffb6ed;
+  background: linear-gradient(90deg, rgba(32,15,48,.96), rgba(32,15,48,.75) 55%, rgba(32,15,48,.30)), url('../imagens_site/banner.jpg') center 54% / cover;
+}
+html[data-theme="dark"]:not([data-contrast="true"]) .hero-note { background: #2d2039; border-color: #81658e; }
+html[data-theme="dark"]:not([data-contrast="true"]) .login-art { background: linear-gradient(0deg,rgba(31,7,55,.96),rgba(47,12,78,.55)),url('../imagens_site/banner.jpg') center/cover; }
+html[data-theme="dark"]:not([data-contrast="true"]) :is(.login-art .eyebrow,.login-quote h1,.login-quote p,.login-foot,.login-brand,.login-version) { color: var(--text); }
+html[data-theme="dark"]:not([data-contrast="true"]) :is(.search-box,.pagination select,.book-form textarea,.book-form input,.book-form select) { background: var(--surface); color: var(--text); }
+html[data-theme="dark"]:not([data-contrast="true"]) .search-box input::placeholder { color: var(--dim); }
+html[data-theme="dark"]:not([data-contrast="true"]) .button.btn-filled:not(:disabled):is(:hover,:focus) { background: #e2a3d3; color: #35102c; }
+html[data-theme="dark"]:not([data-contrast="true"]) .button.btn-outlined:disabled { color: #cbb8d5; }
+html[data-theme="dark"]:not([data-contrast="true"]) .button.danger-button { --md-sys-color-primary: #f6a2b8; color: #f6a2b8; }
+html[data-theme="dark"]:not([data-contrast="true"]) .button.btn-filled.danger-button { color: #35102c; }
+html[data-theme="dark"]:not([data-contrast="true"]) :is(.danger-text,.inline-error) { color: #f6a2b8 !important; }
+html[data-theme="dark"]:not([data-contrast="true"]) .reservation-icon { background: #443052; color: #e6baf4; border-color: #78548a; }
+html[data-theme="dark"]:not([data-contrast="true"]) .status-stamp.waiting { background: #463719; color: #ffdfa1; }
+html[data-theme="dark"]:not([data-contrast="true"]) :is(.status-stamp.active,.status-stamp.returned) { background: #203d2c; color: #b7efc9; }
+html[data-theme="dark"]:not([data-contrast="true"]) .status-stamp.picked-up { background: #472b46; color: #f8bce7; }
+html[data-theme="dark"]:not([data-contrast="true"]) .status-stamp.cancelled { background: #3c3044; color: #e4d6eb; }
+@media (max-width: 600px) {
+  html[data-theme="dark"]:not([data-contrast="true"]) .catalog-hero { background-image: linear-gradient(90deg,rgba(32,15,48,.96),rgba(32,15,48,.85)),url('../imagens_site/banner.jpg'); }
+  .theme-toggle { width: 34px; height: 34px; flex-basis: 34px; }
+}
