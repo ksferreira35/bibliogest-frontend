@@ -247,9 +247,11 @@ html[data-contrast="true"] .button:is(:hover,:focus,:disabled) { background: #00
   --muted: #4f3b5b;
   --dim: #53405f;
   --red-soft: #891164;
-  background: linear-gradient(90deg, rgba(250, 246, 252, .98) 0%, rgba(250, 246, 252, .96) 45%, rgba(250, 246, 252, .88) 100%), url('../imagens_site/banner.jpg') center 54% / cover no-repeat;
+  background: linear-gradient(90deg, rgba(250, 246, 252, .95) 0%, rgba(250, 246, 252, .89) 40%, rgba(250, 246, 252, .24) 70%, rgba(250, 246, 252, .12) 100%), url('../imagens_site/banner.jpg') center 54% / cover no-repeat;
 }
-.hero-note { border-color: #bca2c9; }
+.hero-note { border-color: #bca2c9; background: #faf6fc; padding: 16px 22px; border-radius: 8px; }
+@media (max-width: 600px) { .catalog-hero { background-image: linear-gradient(90deg, rgba(250,246,252,.90), rgba(250,246,252,.76)), url('../imagens_site/banner.jpg'); } }
+html[data-contrast="true"] .hero-note { background: #000; }
 .login-art {
   background: linear-gradient(0deg, rgba(247, 240, 250, .97), rgba(247, 240, 250, .88)), url('../imagens_site/banner.jpg') center / cover;
 }

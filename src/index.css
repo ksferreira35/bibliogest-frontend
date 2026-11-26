@@ -39,7 +39,7 @@
 
 * { box-sizing: border-box; }
 html { min-width: 320px; min-height: 100%; background: var(--bg); }
-body { min-width: 320px; min-height: 100vh; margin: 0; }
+body { min-width: 320px; min-height: 100vh; margin: 0; background: var(--bg); color: var(--text); }
 body, button, input, select { font-family: 'DM Sans', sans-serif; }
 button, input, select { font-size: inherit; }
 button { color: inherit; }
