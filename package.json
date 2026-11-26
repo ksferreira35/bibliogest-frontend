@@ -1,7 +1,7 @@
 {
   "name": "bibliogest-frontend",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Interface web do BiblioGest para consultar o acervo e reservar exemplares físicos.",
   "repository": {
     "type": "git",
@@ -20,11 +20,13 @@
     "test:e2e:open": "cypress open"
   },
   "dependencies": {
+    "@materializecss/materialize": "2.4.0",
     "keycloak-js": "26.2.5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.3.5",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.13",
@@ -37,6 +39,7 @@
     "cypress-axe": "^1.7.0",
     "jsdom": "^31.0.1",
     "oxlint": "^1.90.0",
+    "tailwindcss": "4.3.5",
     "vite": "^8.3.6",
     "vitest": "^5.1.2"
   }

@@ -215,3 +215,17 @@ it('bibliotecário identifica o dono de uma reserva de outro usuário pelo nome'
   })
   audit()
 })
+
+it('mantém a marca CEUB e a grade responsiva sem rolagem horizontal', () => {
+  cy.viewport(1200, 600)
+  visit([])
+  cy.get('.login-brand img').should('be.visible').and('have.attr', 'alt', 'CEUB')
+  cy.document().its('documentElement.scrollWidth').should('be.lte', 1200)
+  cy.contains('button', 'Entrar com a conta institucional').click()
+  cy.contains('h2', 'Tokyo Ghoul').should('be.visible')
+  cy.get('.book-grid').should('have.css', 'display', 'grid')
+  cy.get('.book-grid').invoke('css','gridTemplateColumns').should('match', /^([0-9.]+px ){3}[0-9.]+px$/)
+  cy.document().its('documentElement.scrollWidth').should('be.lte', 1200)
+  cy.viewport(390, 600)
+  cy.get('.book-grid').invoke('css','gridTemplateColumns').should('match', /^[0-9.]+px [0-9.]+px$/)
+})

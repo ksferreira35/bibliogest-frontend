@@ -1,11 +1,12 @@
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig(({ mode, command }) => {
   if (mode === 'e2e' && command !== 'serve')
     throw new Error('O modo e2e não pode gerar um build de produção')
   return {
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     resolve: {
       alias:
         mode === 'e2e'

@@ -46,7 +46,7 @@ export default function Accessibility() {
       {open && (
         <div className="modal-scrim">
           <Modal
-            className="modal accessibility-panel"
+            className="dialog-panel accessibility-panel"
             aria-labelledby="accessibility-title"
             onClose={() => setOpen(false)}
           >
@@ -90,7 +90,7 @@ export default function Accessibility() {
               do navegador também pode ser usado.
             </p>
             <button
-              className="button secondary"
+              className="button btn btn-outlined secondary"
               onClick={() => setPreferences({ ...defaults })}
             >
               Restaurar preferências

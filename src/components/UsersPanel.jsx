@@ -114,12 +114,12 @@ export default function UsersPanel({ subject }) {
         <p>Gerencie o acesso de leitores e bibliotecários.</p>
       </div>
       {error && (
-        <p className="toast error" role="alert">
+        <p className="feedback-toast error" role="alert">
           {error}
         </p>
       )}
       {notice && (
-        <p className="toast success" role="status">
+        <p className="feedback-toast success" role="status">
           {notice}
         </p>
       )}
@@ -138,7 +138,7 @@ export default function UsersPanel({ subject }) {
           />
         </label>
         <button
-          className="button primary"
+          className="button btn btn-filled primary"
           disabled={pending}
           onClick={() => {
             setForm({ nome: '', sobrenome: '', email: '', senhaTemporaria: '' })
@@ -148,7 +148,7 @@ export default function UsersPanel({ subject }) {
           Criar conta
         </button>
         <button
-          className="button secondary"
+          className="button btn btn-outlined secondary"
           disabled={pending}
           onClick={() => auditLoad(0)}
         >
@@ -166,7 +166,7 @@ export default function UsersPanel({ subject }) {
             </div>
             <span>{user.ativo ? 'Ativa' : 'Desativada'}</span>
             <button
-              className="button secondary"
+              className="button btn btn-outlined secondary"
               disabled={pending}
               onClick={() => open(user)}
             >
@@ -178,7 +178,7 @@ export default function UsersPanel({ subject }) {
       {!pending && !users.length && !error && <p>Nenhuma conta encontrada.</p>}
       <nav className="pagination" aria-label="Páginas de usuários">
         <button
-          className="button secondary"
+          className="button btn btn-outlined secondary"
           disabled={pending || page === 0}
           onClick={() => setPage((n) => n - 1)}
         >
@@ -186,7 +186,7 @@ export default function UsersPanel({ subject }) {
         </button>
         <span>Página {page + 1}</span>
         <button
-          className="button secondary"
+          className="button btn btn-outlined secondary"
           disabled={pending || users.length < 20}
           onClick={() => setPage((n) => n + 1)}
         >
@@ -196,7 +196,7 @@ export default function UsersPanel({ subject }) {
       {selected && !confirmation && (
         <div className="modal-scrim">
           <Modal
-            className="modal book-form"
+            className="dialog-panel book-form"
             aria-labelledby="user-title"
             onClose={() => setSelected(null)}
           >
@@ -224,7 +224,7 @@ export default function UsersPanel({ subject }) {
             ) : (
               <>
                 <button
-                  className="button secondary"
+                  className="button btn btn-outlined secondary"
                   disabled={pending}
                   onClick={() =>
                     setConfirmation({
@@ -242,7 +242,7 @@ export default function UsersPanel({ subject }) {
                     : 'Promover a bibliotecário'}
                 </button>
                 <button
-                  className="button secondary"
+                  className="button btn btn-outlined secondary"
                   disabled={pending}
                   onClick={() =>
                     setConfirmation({
@@ -258,7 +258,7 @@ export default function UsersPanel({ subject }) {
                   {selected.ativo ? 'Desativar conta' : 'Ativar conta'}
                 </button>
                 <button
-                  className="button secondary"
+                  className="button btn btn-outlined secondary"
                   disabled={pending}
                   onClick={() =>
                     setConfirmation({
@@ -279,7 +279,7 @@ export default function UsersPanel({ subject }) {
       {confirmation && (
         <div className="modal-scrim">
           <Modal
-            className="modal"
+            className="dialog-panel"
             aria-labelledby="confirm-user-title"
             onClose={() => {
               if (!pending) setConfirmation(null)
@@ -292,16 +292,16 @@ export default function UsersPanel({ subject }) {
               </p>
             )}
             <p>A alteração será registrada no histórico administrativo.</p>
-            <div className="form-actions">
+            <div className="form-actions flex flex-wrap justify-end gap-3">
               <button
-                className="button secondary"
+                className="button btn btn-outlined secondary"
                 disabled={pending}
                 onClick={() => setConfirmation(null)}
               >
                 Cancelar
               </button>
               <button
-                className="button primary"
+                className="button btn btn-filled primary"
                 disabled={pending}
                 onClick={mutate}
               >
@@ -315,7 +315,7 @@ export default function UsersPanel({ subject }) {
         <div className="modal-scrim">
           <Modal
             as="form"
-            className="modal book-form"
+            className="dialog-panel book-form"
             aria-labelledby="create-user-title"
             onClose={() => {
               if (!pending) {
@@ -382,10 +382,10 @@ export default function UsersPanel({ subject }) {
             <p>
               A senha não será salva no navegador. A conta começa como leitor.
             </p>
-            <div className="form-actions">
+            <div className="form-actions flex flex-wrap justify-end gap-3">
               <button
                 type="button"
-                className="button secondary"
+                className="button btn btn-outlined secondary"
                 disabled={pending}
                 onClick={() => {
                   setCreating(false)
@@ -394,7 +394,7 @@ export default function UsersPanel({ subject }) {
               >
                 Cancelar
               </button>
-              <button className="button primary" disabled={pending}>
+              <button className="button btn btn-filled primary" disabled={pending}>
                 Criar usuário
               </button>
             </div>
@@ -404,7 +404,7 @@ export default function UsersPanel({ subject }) {
       {audit && (
         <div className="modal-scrim">
           <Modal
-            className="modal audit-panel"
+            className="dialog-panel audit-panel"
             aria-labelledby="audit-title"
             onClose={() => setAudit(null)}
           >
@@ -434,14 +434,14 @@ export default function UsersPanel({ subject }) {
             )}
             <div className="pagination">
               <button
-                className="button secondary"
+                className="button btn btn-outlined secondary"
                 disabled={pending || auditPage === 0}
                 onClick={() => auditLoad(auditPage - 1)}
               >
                 Anteriores
               </button>
               <button
-                className="button secondary"
+                className="button btn btn-outlined secondary"
                 disabled={pending || audit.length < 20}
                 onClick={() => auditLoad(auditPage + 1)}
               >

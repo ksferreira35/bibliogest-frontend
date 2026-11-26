@@ -8,7 +8,7 @@ export default function CatalogPagination({
   return (
     <nav className="pagination" aria-label="Páginas do catálogo">
       <button
-        className="button secondary"
+        className="button btn btn-outlined secondary"
         disabled={busy || info.pagina === 0}
         onClick={() => onChange(info.pagina - 1)}
       >
@@ -34,7 +34,7 @@ export default function CatalogPagination({
         </select>
       </label>
       <button
-        className="button secondary"
+        className="button btn btn-outlined secondary"
         disabled={busy || info.pagina + 1 >= info.totalPaginas}
         onClick={() => onChange(info.pagina + 1)}
       >

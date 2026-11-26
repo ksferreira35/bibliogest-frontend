@@ -135,3 +135,15 @@ O frontend chama `usuariosUrl` em `/config.json` (produção) ou `/config.dev.js
 A senha de criação fica apenas no estado temporário do formulário e é limpa ao fechar ou concluir. A conta inicia como LEITOR e troca a senha no primeiro acesso. JWTs já emitidos podem durar até expirar mesmo após encerrar sessões no Keycloak. Os testes Cypress usam fixtures, sem alterar contas reais.
 
 No modo de desenvolvimento, o proxy de `/usuarios` aponta para a API local em `127.0.0.1:8082`, evitando administrar contas reais por acidente durante o desenvolvimento do painel. Os proxies legados de Acervo e Reservas mantêm sua configuração anterior. Para testes automatizados, o modo E2E não encaminha requisições às APIs reais.
+
+## Edição acadêmica CEUB
+
+A branch `feature/identidade-ceub` conserva a navegação, a integração com as três APIs e os controles de acessibilidade. A identidade usa roxo, magenta e o logo fornecido para o projeto. A revisão de portfólio permanece em `feature/administracao-usuarios` (`5ac7b90`).
+
+- Tailwind CSS 4: integração pelo plugin oficial do Vite, com classes utilitárias de layout, grade de livros e espaçamento; sem Preflight.
+- Materialize CSS 2: botões preenchidos, contornados e tonais, cartões e tokens visuais. Seu CSS fica numa camada própria; os formulários, os diálogos acessíveis e os eventos continuam controlados pelo React.
+- CSS do projeto: identidade CEUB, paleta, contraste, estilização das telas e adaptações responsivas. Sem Bootstrap.
+
+O tema separado do Keycloak está em `keycloak-theme/`. Empacote o diretório como JAR mantendo `META-INF/keycloak-themes.json` e `theme/bibliogest-ceub` na raiz e disponibilize-o em `/opt/keycloak/providers/`. Depois de reiniciar o Keycloak, selecione **Realm settings → Themes → Login theme → bibliogest-ceub**. O tema original `bibliogest` permanece disponível. O novo tema altera apenas CSS e recursos de apresentação; herda os formulários e o fluxo de autenticação de `keycloak.v2`.
+
+O fluxo de CI continua executando lint, Vitest com mínimo de 80% em todas as métricas, Cypress (incluindo verificações de acessibilidade) e build.

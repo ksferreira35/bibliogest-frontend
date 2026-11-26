@@ -62,7 +62,7 @@ export function ReservationList({
                   </button>
                   {waiting && (
                     <button
-                      className="button primary"
+                      className="button btn btn-filled primary"
                       disabled={busy}
                       onClick={() => onPickup(id)}
                     >
@@ -71,7 +71,7 @@ export function ReservationList({
                   )}
                   {state === 'picked-up' && (
                     <button
-                      className="button secondary"
+                      className="button btn btn-outlined secondary"
                       disabled={busy}
                       onClick={() => onReturn(id, state)}
                     >
@@ -133,7 +133,7 @@ export function ReservationDetails({ reservation, onClose }) {
       }}
     >
       <Modal
-        className="modal"
+        className="dialog-panel"
         onClose={onClose}
         aria-labelledby="reservation-details-title"
       >

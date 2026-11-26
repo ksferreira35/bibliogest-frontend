@@ -553,9 +553,9 @@ function Workspace({ auth, session }) {
 
   if (!signedIn)
     return (
-      <main id="conteudo" tabIndex={-1} className="login-shell">
+      <main id="conteudo" tabIndex={-1} className="login-shell grid min-h-screen">
         <div className="login-art">
-          <span className="eyebrow">BIBLIOGEST · BIBLIOTECA UNIVERSITÁRIA</span>
+          <span className="eyebrow">BIBLIOGEST · CEUB</span>
           <div className="login-quote">
             <span className="quote-mark">“</span>
             <h1>Há mundos inteiros entre as páginas.</h1>
@@ -565,8 +565,16 @@ function Workspace({ auth, session }) {
             ACERVO ACADÊMICO <span>·</span> CONSULTA E CIRCULAÇÃO
           </div>
         </div>
-        <section className="login-panel">
-          <div className="brand-mark">BG</div>
+        <section className="login-panel card-panel">
+          <div className="login-brand flex items-center gap-4">
+            <span className="ceub-logo">
+              <img src="/ceub-logo.webp" alt="CEUB" />
+            </span>
+            <div>
+              <strong>BiblioGest</strong>
+              <small>BIBLIOTECA UNIVERSITÁRIA</small>
+            </div>
+          </div>
           <span className="eyebrow">BEM-VINDO À BIBLIOTECA</span>
           <h2>Entre na sua conta</h2>
           <p>
@@ -574,7 +582,7 @@ function Workspace({ auth, session }) {
             suas reservas.
           </p>
           <button
-            className="button primary login-button"
+            className="button btn btn-filled primary login-button"
             onClick={signIn}
             disabled={!auth?.available}
           >
@@ -596,7 +604,7 @@ function Workspace({ auth, session }) {
             <Icon>lock</Icon> Acesso seguro à biblioteca
           </div>
           <span className="login-version">
-            BIBLIOGEST · SISTEMA DE BIBLIOTECA
+            BIBLIOGEST · PROJETO ACADÊMICO CEUB
           </span>
         </section>
       </main>
@@ -607,7 +615,7 @@ function Workspace({ auth, session }) {
       <main id="conteudo" tabIndex={-1} className="empty-state" role="alert">
         <h1>Acesso não autorizado</h1>
         <p>Sua conta não possui um perfil de acesso à biblioteca.</p>
-        <button className="button secondary" onClick={signOut}>
+        <button className="button btn btn-outlined secondary" onClick={signOut}>
           Sair da conta
         </button>
       </main>
@@ -630,16 +638,18 @@ function Workspace({ auth, session }) {
   if (session.administrator) nav.push(['usuarios', 'Usuários', 'library_books'])
 
   return (
-    <div className="app-shell">
+    <div className="app-shell min-h-screen flex flex-col">
       <header className="topbar">
         <button
           className="brand"
           onClick={() => setPage(canRead ? 'catalogo' : 'usuarios')}
         >
-          <span className="brand-mark">BG</span>
+          <span className="ceub-logo">
+            <img src="/ceub-logo.webp" alt="CEUB" />
+          </span>
           <span>
             <strong>BiblioGest</strong>
-            <small>ACERVO ACADÊMICO</small>
+            <small>BIBLIOTECA CEUB</small>
           </span>
         </button>
         <nav className="main-nav" aria-label="Navegação principal">
@@ -686,9 +696,9 @@ function Workspace({ auth, session }) {
           </button>
         </div>
       </header>
-      <main id="conteudo" tabIndex={-1} className="content">
+      <main id="conteudo" tabIndex={-1} className="content w-full flex-1">
         {error && (
-          <div className="toast error" role="alert">
+          <div className="feedback-toast error" role="alert">
             <Icon>error</Icon>
             {error}
             <button onClick={() => setError('')} aria-label="Fechar">
@@ -697,7 +707,7 @@ function Workspace({ auth, session }) {
           </div>
         )}
         {notice && (
-          <div className="toast success" role="status">
+          <div className="feedback-toast success" role="status">
             <Icon>check_circle</Icon>
             {notice}
             <button onClick={() => setNotice('')} aria-label="Fechar">
@@ -738,7 +748,7 @@ function Workspace({ auth, session }) {
                 <h2>O catálogo está carregando</h2>
                 <p>As obras serão exibidas assim que o Acervo responder.</p>
                 <button
-                  className="button secondary"
+                  className="button btn btn-outlined secondary"
                   onClick={() => run(loadBooks)}
                 >
                   Tentar novamente
@@ -749,7 +759,7 @@ function Workspace({ auth, session }) {
                 <h2>Não foi possível carregar o catálogo</h2>
                 <p>{catalogError}</p>
                 <button
-                  className="button secondary"
+                  className="button btn btn-outlined secondary"
                   disabled={busy}
                   onClick={() => run(loadBooks)}
                 >
@@ -770,9 +780,9 @@ function Workspace({ auth, session }) {
                 </p>
               </div>
             ) : (
-              <div className="book-grid">
+              <div className="book-grid grid grid-cols-2 min-[601px]:grid-cols-3 min-[901px]:grid-cols-4 gap-x-4 gap-y-6 md:gap-x-6 md:gap-y-8">
                 {filteredBooks.map((book) => (
-                  <article className="book-card" key={book.id}>
+                  <article className="book-card card flex flex-col" key={book.id}>
                     <button
                       className="cover-button"
                       onClick={() =>
@@ -788,7 +798,7 @@ function Workspace({ auth, session }) {
                       />
                       <span className="cover-tag">ACERVO</span>
                     </button>
-                    <div className="book-meta">
+                    <div className="book-meta flex flex-col flex-1">
                       <span className="category-label">
                         {display(book.categoria)}
                       </span>
@@ -801,7 +811,7 @@ function Workspace({ auth, session }) {
                         {book.isbn ? ` · ISBN ${book.isbn}` : ''}
                       </div>
                       <button
-                        className="button reserve-button"
+                        className="button btn btn-tonal reserve-button"
                         onClick={() => openReserve(book)}
                         disabled={busy}
                       >
@@ -826,7 +836,7 @@ function Workspace({ auth, session }) {
             <div className="section-bar">
               <span>{reservations.length} RESERVAS NESTA PÁGINA</span>
               <button
-                className="button secondary"
+                className="button btn btn-outlined secondary"
                 onClick={() => run(() => loadReservations(false))}
                 disabled={busy}
               >
@@ -859,7 +869,7 @@ function Workspace({ auth, session }) {
             <div className="section-bar">
               <span>{catalogInfo.totalElementos} OBRAS ENCONTRADAS</span>
               <button
-                className="button primary"
+                className="button btn btn-filled primary"
                 disabled={busy}
                 onClick={() => openBookForm()}
               >
@@ -871,7 +881,7 @@ function Workspace({ auth, session }) {
               <p role="alert">
                 {catalogError}
                 <button
-                  className="button secondary"
+                  className="button btn btn-outlined secondary"
                   onClick={() => run(loadBooks)}
                 >
                   Tentar novamente
@@ -1003,7 +1013,7 @@ function Workspace({ auth, session }) {
             <div className="section-bar">
               <span>{reservations.length} RESERVAS NESTA PÁGINA</span>
               <button
-                className="button secondary"
+                className="button btn btn-outlined secondary"
                 onClick={() => run(() => loadReservations(true))}
                 disabled={busy}
               >
@@ -1038,7 +1048,7 @@ function Workspace({ auth, session }) {
       {librarian && deletingBook && (
         <div className="modal-scrim">
           <Modal
-            className="modal"
+            className="dialog-panel"
             onClose={() => {
               if (!busy) setDeletingBook(null)
             }}
@@ -1055,16 +1065,16 @@ function Workspace({ auth, session }) {
                 {deleteError}
               </p>
             )}
-            <div className="form-actions">
+            <div className="form-actions flex flex-wrap justify-end gap-3">
               <button
-                className="button secondary"
+                className="button btn btn-outlined secondary"
                 disabled={busy}
                 onClick={() => setDeletingBook(null)}
               >
                 Cancelar
               </button>
               <button
-                className="button primary danger-button"
+                className="button btn btn-filled primary danger-button"
                 disabled={busy}
                 onClick={deleteBook}
               >
@@ -1082,7 +1092,7 @@ function Workspace({ auth, session }) {
           }}
         >
           <Modal
-            className="modal"
+            className="dialog-panel"
             onClose={closeBook}
             aria-labelledby="modal-title"
           >
@@ -1114,7 +1124,7 @@ function Workspace({ auth, session }) {
                   <dd>{selectedBook.volume || '—'}</dd>
                 </dl>
                 <button
-                  className="button primary"
+                  className="button btn btn-filled primary"
                   onClick={() => openReserve(selectedBook)}
                 >
                   Consultar disponibilidade
@@ -1133,7 +1143,7 @@ function Workspace({ auth, session }) {
                   <div className="availability-error">
                     <p>{availabilityError}</p>
                     <button
-                      className="button secondary"
+                      className="button btn btn-outlined secondary"
                       onClick={() => openReserve(selectedBook)}
                     >
                       Tentar novamente
@@ -1150,7 +1160,7 @@ function Workspace({ auth, session }) {
                             copyId(copy)}
                         </span>
                         <button
-                          className="button primary"
+                          className="button btn btn-filled primary"
                           onClick={() => reserve(copy)}
                           disabled={busy || !session.reader}
                         >
@@ -1167,7 +1177,7 @@ function Workspace({ auth, session }) {
                     </p>
                     {availabilityDiagnostic && <p>{availabilityDiagnostic}</p>}
                     <button
-                      className="button secondary"
+                      className="button btn btn-outlined secondary"
                       onClick={() => openReserve(selectedBook)}
                     >
                       Consultar novamente
@@ -1182,7 +1192,7 @@ function Workspace({ auth, session }) {
       {librarian && selectedCopies && (
         <div className="modal-scrim">
           <Modal
-            className="modal"
+            className="dialog-panel"
             onClose={() => setSelectedCopies(null)}
             aria-labelledby="copies-title"
           >
@@ -1243,7 +1253,7 @@ function Workspace({ auth, session }) {
                   placeholder="Código patrimonial"
                 />
               </label>
-              <button className="button primary" disabled={busy}>
+              <button className="button btn btn-filled primary" disabled={busy}>
                 Adicionar exemplar
               </button>
             </form>
@@ -1258,7 +1268,7 @@ function Workspace({ auth, session }) {
       )}
       <footer className="footer">
         <span>
-          BIBLIOGEST <i>·</i> SISTEMA DE BIBLIOTECA UNIVERSITÁRIA
+          BIBLIOGEST <i>·</i> PROJETO ACADÊMICO CEUB
         </span>
         <span>ACERVO E CIRCULAÇÃO INSTITUCIONAL</span>
       </footer>

@@ -1,6 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
-:root { font-family: 'DM Sans', sans-serif; color: #e8e4df; background: #121316; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; --bg: #121316; --surface: #191a1e; --surface-2: #222328; --surface-3: #2b2c31; --line: #33343a; --text: #eee9e2; --muted: #a39e99; --dim: #ada7a1; --red: #a42d40; --red-soft: #d68b94; --gold: #d2ae67; --green: #8fc4a2; }
+
+:root {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: #301a3b;
+  background: #f7f4fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-size: 16px;
+  color-scheme: light;
+  --bg: #f7f4fa;
+  --surface: #fff;
+  --surface-2: #f0e9f6;
+  --surface-3: #e8dcef;
+  --line: #dcd0e6;
+  --text: #301a3b;
+  --muted: #685875;
+  --dim: #66546f;
+  --red: #ad087b;
+  --red-soft: #95116f;
+  --gold: #80580d;
+  --green: #25613c;
+  --md-sys-color-primary: #9c0a72;
+  --md-sys-color-on-primary: #fff;
+  --md-sys-color-primary-container: #f4d7ee;
+  --md-sys-color-secondary: #762d91;
+  --md-sys-color-secondary-container: #eedff7;
+  --md-sys-color-on-secondary-container: #4d185f;
+  --md-sys-color-outline: #8b689b;
+  --md-sys-color-on-surface: var(--text);
+  --md-sys-color-on-background: var(--text);
+  --md-sys-color-surface: var(--surface);
+  --md-sys-color-surface-tint: #5b1678;
+  --md-sys-elevation-1: 0 3px 14px rgb(53 16 78 / 8%);
+  --btn-border-radius: 8px;
+}
+
 * { box-sizing: border-box; }
 html { min-width: 320px; min-height: 100%; background: var(--bg); }
 body { min-width: 320px; min-height: 100vh; margin: 0; }
@@ -8,22 +44,34 @@ body, button, input, select { font-family: 'DM Sans', sans-serif; }
 button, input, select { font-size: inherit; }
 button { color: inherit; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--red-soft); outline-offset: 3px; }
-::selection { background: #833040; color: #fff; }
+::selection { background: #941170; color: #fff; }
 #root { min-height: 100vh; }
 
 html[data-text-size="large"] { font-size: 112.5%; }
 html[data-text-size="extra"] { font-size: 125%; }
-:focus-visible { outline: 3px solid #ffb6c3; outline-offset: 4px; }
+:focus-visible { outline: 3px solid #a10b78; outline-offset: 4px; }
 .skip-link { position: fixed; top: -100px; left: 12px; z-index: 100; padding: 14px; background: #fff; color: #111; }
 .skip-link:focus { top: 12px; }
-.accessibility-trigger { position: fixed; z-index: 25; right: 12px; bottom: 12px; min-height: 44px; border: 1px solid #edb0ba; border-radius: 6px; padding: 10px 14px; background: #292025; color: #fff; cursor: pointer; }
+.accessibility-trigger { position: fixed; z-index: 25; right: 12px; bottom: 12px; min-height: 44px; border: 1px solid #d5b1e8; border-radius: 6px; padding: 10px 14px; background: #451253; color: #fff; cursor: pointer; }
 .accessibility-panel { display: grid; gap: 20px; }
 .accessibility-panel label { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .accessibility-panel input[type="checkbox"] { width: 22px; height: 22px; }
-.accessibility-panel select { color: #fff; background: #222328; padding: 10px; }
+.accessibility-panel select { color: var(--text); background: var(--surface); padding: 10px; }
 .accessibility-panel p { font-size: .875rem; line-height: 1.6; }
 html[data-contrast="true"] { --bg: #000; --surface: #000; --surface-2: #111; --surface-3: #111; --text: #fff; --muted: #fff; --dim: #fff; --line: #fff; --red-soft: #ffca69; }
-html[data-contrast="true"] body, html[data-contrast="true"] main, html[data-contrast="true"] .modal, html[data-contrast="true"] .topbar { background: #000; color: #fff; }
+html[data-contrast="true"] body, html[data-contrast="true"] main, html[data-contrast="true"] .dialog-panel, html[data-contrast="true"] .topbar { background: #000; color: #fff; }
 html[data-contrast="true"] .footer, html[data-contrast="true"] .status-stamp, html[data-contrast="true"] .login-foot, html[data-contrast="true"] .login-version { color: #fff; }
 html[data-reduced-motion="true"] *, html[data-reduced-motion="true"] *::before, html[data-reduced-motion="true"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* Native controls remain owned by React, without Materialize JavaScript. */
+input:not([type="checkbox"]):not([type="file"]), select, textarea {
+  margin: 0;
+  box-shadow: none;
+}
+input[type="checkbox"] { accent-color: var(--red); }
+select { display: inline-block; }
+button { font-family: inherit; }
+nav { background: transparent; box-shadow: none; color: inherit; line-height: normal; height: auto; }
+html[data-contrast="true"] { color-scheme: dark; --md-sys-color-primary: #ffca69; --md-sys-color-on-primary: #000; --md-sys-color-surface: #000; --md-sys-color-on-surface: #fff; --md-sys-color-on-background: #fff; }
+label { color: inherit; }

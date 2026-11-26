@@ -68,3 +68,6 @@ coverage
 cypress/screenshots/
 cypress/videos/
 cypress/downloads/
+
+# Tema Keycloak tem distribuição própria
+keycloak-theme/

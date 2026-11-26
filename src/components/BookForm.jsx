@@ -59,7 +59,7 @@ export default function BookForm({
     <div className="modal-scrim">
       <Modal
         as="form"
-        className="modal book-form"
+        className="dialog-panel book-form"
         onClose={() => {
           if (!busy) onClose()
         }}
@@ -121,7 +121,7 @@ export default function BookForm({
           />
           <button
             type="button"
-            className="button secondary"
+            className="button btn btn-outlined secondary"
             onClick={createCategory}
           >
             Cadastrar categoria
@@ -156,7 +156,7 @@ export default function BookForm({
           />
           <button
             type="button"
-            className="button secondary"
+            className="button btn btn-outlined secondary"
             onClick={createAuthor}
           >
             Cadastrar autor
@@ -167,7 +167,7 @@ export default function BookForm({
             {supportError}
           </p>
         )}
-        <div className="form-pair">
+        <div className="form-pair grid grid-cols-1 min-[601px]:grid-cols-2 gap-3">
           <label>
             Volume (opcional)
             <input
@@ -199,12 +199,12 @@ export default function BookForm({
         <small id="descricao-ajuda" className="description-hint">
           {form.descricao.length}/5000 caracteres
         </small>
-        <div className="form-actions">
-          <button type="button" className="button secondary" onClick={onClose}>
+        <div className="form-actions flex flex-wrap justify-end gap-3">
+          <button type="button" className="button btn btn-outlined secondary" onClick={onClose}>
             Cancelar
           </button>
           <button
-            className="button primary"
+            className="button btn btn-filled primary"
             disabled={busy || !form.categoriaId || form.autorIds.length === 0}
           >
             {book ? 'Salvar alterações' : 'Salvar obra no Acervo'}
