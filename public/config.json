@@ -3,5 +3,6 @@
   "realm": "bibliogest",
   "clientId": "bibliogest-react",
   "acervoUrl": "/acervo/api",
-  "reservasUrl": "/reservas/api"
+  "reservasUrl": "/reservas/api",
+  "usuariosUrl": "/usuarios/api"
 }

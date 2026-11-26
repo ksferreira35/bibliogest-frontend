@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './frameworks.css'
 import './index.css'
 import App from './App.jsx'
 import { initializeAuth } from './auth.js'
@@ -12,7 +13,9 @@ async function start() {
     auth = { available: false }
   }
   createRoot(document.getElementById('root')).render(
-    <StrictMode><App auth={auth} /></StrictMode>,
+    <StrictMode>
+      <App auth={auth} />
+    </StrictMode>,
   )
 }
 

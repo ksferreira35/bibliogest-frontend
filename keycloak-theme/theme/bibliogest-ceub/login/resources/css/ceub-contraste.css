@@ -1,0 +1,170 @@
+@font-face {
+  font-family: Inter;
+  src: url('../fonts/inter.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+}
+
+.login-pf #keycloak-bg {
+  --ceub-ink: #301a3b;
+  --ceub-muted: #685875;
+  --ceub-purple: #43104f;
+  --ceub-magenta: #9c0a72;
+  --ceub-border: #cbbbd5;
+  --pf-v5-global--Color--100: var(--ceub-ink);
+  --pf-v5-global--Color--200: var(--ceub-muted);
+  --pf-v5-global--link--Color: var(--ceub-magenta);
+  --pf-v5-global--link--Color--hover: var(--ceub-purple);
+  --pf-v5-global--FontFamily--text: Inter, system-ui, sans-serif;
+  --pf-v5-global--FontFamily--heading: Inter, system-ui, sans-serif;
+  min-height: 100vh;
+  height: auto;
+  margin: 0;
+  color: var(--ceub-ink);
+  background: radial-gradient(ellipse at 22% 20%, #682977 0%, transparent 48%),
+    radial-gradient(ellipse at 88% 75%, #43104f 0%, transparent 57%),
+    #210b37;
+  font-family: var(--pf-v5-global--FontFamily--text);
+  color-scheme: light;
+}
+
+#keycloak-bg .pf-v5-c-login {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 28px 16px;
+  background: none;
+}
+
+#keycloak-bg .pf-v5-c-login__container {
+  position: relative;
+  display: block;
+  width: min(100%, 450px);
+  padding: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e4d8ec;
+  border-top: 5px solid #c41092;
+  box-shadow: 0 28px 64px #15071e75;
+}
+
+#keycloak-bg #kc-header {
+  margin: 0;
+  padding: 30px 24px 4px;
+}
+
+#keycloak-bg #kc-header-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  width: auto;
+  min-height: 42px;
+  background: none;
+  color: var(--ceub-purple) !important;
+  font-size: clamp(1.35rem, 5vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: -.045em;
+  text-transform: none;
+}
+
+#keycloak-bg #kc-header-wrapper::before {
+  flex: 0 0 110px;
+  height: 56px;
+  border: 1px solid #e4d8ec;
+  border-radius: 7px;
+  background: #fff url('../img/ceub-logo.webp') center / 175% auto no-repeat;
+  content: '';
+}
+
+#keycloak-bg .pf-v5-c-login__main {
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+}
+#keycloak-bg .pf-v5-c-login__main-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 25px 30px 0;
+  border: 0;
+}
+#keycloak-bg .pf-v5-c-login__main-body {
+  padding: 24px 30px 0;
+}
+#keycloak-bg .pf-v5-c-login__main-footer {
+  display: block;
+  padding: 0 30px 28px;
+  border: 0;
+  background: transparent;
+  color: var(--ceub-muted);
+}
+#keycloak-bg #kc-page-title {
+  margin: 0;
+  color: var(--ceub-ink);
+  font: 600 clamp(1.25rem, 5vw, 1.65rem)/1.3 Inter, system-ui, sans-serif;
+  text-align: center;
+}
+#keycloak-bg .pf-v5-c-form__label,
+#keycloak-bg .pf-v5-c-form__label-text {
+  color: var(--ceub-ink);
+  font-size: .875rem;
+  font-weight: 500;
+}
+#keycloak-bg .pf-v5-c-form-control {
+  --pf-v5-c-form-control--BackgroundColor: #faf7fc;
+  --pf-v5-c-form-control--Color: var(--ceub-ink);
+  --pf-v5-c-form-control--after--BorderBottomColor: var(--ceub-border);
+  --pf-v5-c-form-control--before--BorderTopColor: var(--ceub-border);
+  --pf-v5-c-form-control--before--BorderRightColor: var(--ceub-border);
+  --pf-v5-c-form-control--before--BorderLeftColor: var(--ceub-border);
+  --pf-v5-c-form-control--hover--after--BorderBottomColor: var(--ceub-magenta);
+  --pf-v5-c-form-control--focus--after--BorderBottomColor: var(--ceub-magenta);
+  min-height: 44px;
+}
+#keycloak-bg .pf-v5-c-button.pf-m-primary {
+  --pf-v5-c-button--m-primary--BackgroundColor: var(--ceub-magenta);
+  --pf-v5-c-button--m-primary--hover--BackgroundColor: #84065f;
+  --pf-v5-c-button--m-primary--focus--BackgroundColor: #84065f;
+  --pf-v5-c-button--m-primary--active--BackgroundColor: #710751;
+  --pf-v5-c-button--m-primary--Color: #fff;
+  min-height: 46px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+#keycloak-bg [data-password-toggle] {
+  --pf-v5-c-button--m-control--BackgroundColor: #f0e9f6;
+  --pf-v5-c-button--m-control--Color: var(--ceub-purple);
+  min-width: 44px;
+}
+#keycloak-bg a { color: var(--ceub-magenta); }
+#keycloak-bg :is(a, button, input, select):focus-visible {
+  outline: 2px solid var(--ceub-magenta);
+  outline-offset: 3px;
+}
+#keycloak-bg #kc-info {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+#keycloak-bg #kc-registration {
+  color: var(--ceub-muted);
+  font-size: .875rem;
+  text-align: center;
+}
+#keycloak-bg #kc-info-wrapper { padding: 0; }
+#keycloak-bg #kc-form-login { row-gap: 16px; }
+
+@media (max-width: 390px) {
+  #keycloak-bg .pf-v5-c-login__main-header,
+  #keycloak-bg .pf-v5-c-login__main-body,
+  #keycloak-bg .pf-v5-c-login__main-footer { padding-inline: 18px; }
+}

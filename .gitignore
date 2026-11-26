@@ -75,3 +75,11 @@ dumps/
 
 # Backups do editor
 *~
+
+# Resultados de testes
+coverage/
+.vitest/
+
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/

@@ -56,3 +56,18 @@ dist
 
 # Backups do editor
 **/*~
+
+# Documentação e configuração de desenvolvimento
+README.md
+**/README.md
+public/config.dev.json
+**/.env*
+coverage
+.vitest
+
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Tema Keycloak tem distribuição própria
+keycloak-theme/
